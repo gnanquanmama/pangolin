@@ -2,9 +2,9 @@ package com.mcoding.pangolin.handler;
 
 import com.google.common.eventbus.EventBus;
 import com.mcoding.pangolin.Message;
-import com.mcoding.pangolin.context.BaseChannelContext;
-import com.mcoding.pangolin.context.ProxyChannelContext;
-import com.mcoding.pangolin.listener.CreateNewProxyPortListener;
+import com.mcoding.pangolin.contants.EndPointUnDirectedPath;
+import com.mcoding.pangolin.context.TunnelContext;
+import com.mcoding.pangolin.listener.NewProxyPortListener;
 import com.mcoding.pangolin.listener.event.CreateNewProxyPortEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -24,10 +24,9 @@ public class BasePipelineHandler extends ChannelInboundHandlerAdapter {
     private EventBus eventBus = new EventBus("create_new_proxy_port_event_bus");
 
     public BasePipelineHandler() {
-        CreateNewProxyPortListener createNewProxyPortListener = new CreateNewProxyPortListener();
+        NewProxyPortListener createNewProxyPortListener = new NewProxyPortListener();
         eventBus.register(createNewProxyPortListener);
     }
-
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -35,8 +34,8 @@ public class BasePipelineHandler extends ChannelInboundHandlerAdapter {
         Message message = (Message) msg;
         if (Message.CONNECTING.equals(message.getType())) {
             Integer proxyPort = message.getProxyPort();
-            Channel proxyChannel = BaseChannelContext.get(proxyPort);
-            if (Objects.nonNull(proxyChannel)) {
+            Channel baseChannel = TunnelContext.get(EndPointUnDirectedPath.BASE_SERVER_TO_BASE_CLIENT, proxyPort);
+            if (Objects.nonNull(baseChannel)) {
                 Message respMsg = new Message();
                 respMsg.setData(String.format("端口%d已被占用,请更换端口", proxyPort).getBytes());
                 ctx.writeAndFlush(respMsg);
@@ -46,12 +45,13 @@ public class BasePipelineHandler extends ChannelInboundHandlerAdapter {
 
             // 新生成一个代理管道任务
             eventBus.post(new CreateNewProxyPortEvent(message.getProxyPort(), false));
-            BaseChannelContext.put(message.getProxyPort(), ctx.channel());
+
+            TunnelContext.put(EndPointUnDirectedPath.BASE_SERVER_TO_BASE_CLIENT, proxyPort, ctx.channel());
 
         } else {
             Integer proxyPort = message.getProxyPort();
-            Channel proxyChannel = ProxyChannelContext.get(proxyPort);
 
+            Channel proxyChannel = TunnelContext.get(EndPointUnDirectedPath.APP_TO_PROXY_SERVER, proxyPort);
             ByteBuf respBuffer = Unpooled.copiedBuffer(new String(message.getData()), CharsetUtil.UTF_8);
             proxyChannel.writeAndFlush(respBuffer);
         }

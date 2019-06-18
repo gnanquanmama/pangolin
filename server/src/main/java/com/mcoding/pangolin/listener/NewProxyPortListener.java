@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
  * @author wzt on 2019/6/18.
  * @version 1.0
  */
-public class CreateNewProxyPortListener {
+public class NewProxyPortListener {
 
     private static ExecutorService execService = Executors.newCachedThreadPool();
 

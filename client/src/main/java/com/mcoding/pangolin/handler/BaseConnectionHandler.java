@@ -1,9 +1,14 @@
 package com.mcoding.pangolin.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.contants.EndPointUnDirectedPath;
+import com.mcoding.pangolin.context.TunnelContext;
+import com.mcoding.pangolin.task.ConnectRealServerTask;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.CharsetUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -11,10 +16,13 @@ import lombok.AllArgsConstructor;
  * @version 1.0
  */
 @AllArgsConstructor
-public class InitConnectionHandler extends ChannelInboundHandlerAdapter {
+public class BaseConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private String key;
     private Integer proxyPort;
+
+    private String realServerHost;
+    private Integer realServerPort;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -23,6 +31,8 @@ public class InitConnectionHandler extends ChannelInboundHandlerAdapter {
         message.setProxyPort(proxyPort);
         message.setType(Message.CONNECTING);
         ctx.writeAndFlush(message);
+
+        new Thread(new ConnectRealServerTask(proxyPort, realServerHost, realServerPort)).start();
     }
 
     @Override
@@ -30,21 +40,17 @@ public class InitConnectionHandler extends ChannelInboundHandlerAdapter {
         Message message = (Message) msg;
         System.out.println("server said : " + new String(message.getData()));
 
-        StringBuilder sendString = new StringBuilder();
-        sendString.append("HTTP/1.1 200 OK\r\n");
-        sendString.append("Content-Type:text/html;charset=UTF-8\r\n");
-        sendString.append("\r\n");
-
-        sendString.append("<html><head><title>显示报文</title></head><body>");
-        sendString.append("接收到请求报文是：<br/>");
-        sendString.append("</body></html>");
+        Channel realChannel = TunnelContext.get(EndPointUnDirectedPath.BASE_CLIENT_TO_REAL_SERVER, 0);
+        realChannel.writeAndFlush(Unpooled.copiedBuffer(new String(message.getData()), CharsetUtil.UTF_8));
 
 
-        Message respMsg = new Message();
-        respMsg.setType(Message.TRANSFER);
-        respMsg.setProxyPort(proxyPort);
-        respMsg.setData(sendString.toString().getBytes());
-        ctx.writeAndFlush(respMsg);
+        System.out.println(realChannel.isActive());
+        System.out.println(realChannel.isOpen());
+        System.out.println(realChannel.isRegistered());
+        System.out.println(realChannel.isWritable());
+        System.out.println("realchannel : " + realChannel.toString());
+
+        TunnelContext.put(EndPointUnDirectedPath.BASE_SERVER_TO_BASE_CLIENT, 0, ctx.channel());
     }
 
     @Override
