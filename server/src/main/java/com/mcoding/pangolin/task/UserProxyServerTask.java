@@ -21,22 +21,30 @@ import io.netty.util.CharsetUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * @author wzt on 2019/6/17.
  * @version 1.0
  */
 @Data
 @AllArgsConstructor
-public class UserProxyServerTask implements Runnable {
+public class UserProxyServerTask implements Runnable , Closeable {
 
     private Integer proxyPort;
     private boolean ssl = false;
 
+    public UserProxyServerTask(Integer proxyPort, boolean ssl) {
+        this.proxyPort = proxyPort;
+        this.ssl = ssl;
+    }
+
+    private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+
     @Override
     public void run() {
-
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             final SslContext sslCtx;
             if (ssl) {
@@ -76,5 +84,11 @@ public class UserProxyServerTask implements Runnable {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
     }
 }
