@@ -1,11 +1,14 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.Message;
-import com.mcoding.pangolin.common.ChannelContextHolder;
+import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+import java.util.Objects;
 
 /**
  * @author wzt on 2019/6/20.
@@ -31,24 +34,31 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
 
     private void handleConnection(ChannelHandlerContext ctx, Message msg) {
         String userId = msg.getUserId();
-
-        ChannelContextHolder.addProxyChannel(ctx.channel());
+        ctx.channel().attr(Constants.USER_ID).set(userId);
+        ChannelContextHolder.addProxyServerChannel(userId, ctx.channel());
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, Message msg) {
-        String userId = msg.getUserId();
-        Channel userChannel = ChannelContextHolder.getUserChannelByUserId(userId);
-        if (userChannel.isWritable()) {
-            System.out.println("receive data : " + new String(msg.getData()));
-
+        String userId = ctx.channel().attr(Constants.USER_ID).get();
+        Channel userChannel = ChannelContextHolder.getUserServerChannel(userId);
+        if (Objects.nonNull(userChannel) && userChannel.isWritable()) {
             userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData()));
+            System.out.println("传输数据：" + userChannel);
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("ProxyChannelHandler channelInactive");
+    public void channelActive(ChannelHandlerContext ctx) {
+        System.out.println("内网代理端通道开启：" + ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        String userId = ctx.channel().attr(Constants.USER_ID).get();
+        ChannelContextHolder.closeUserServerChannel(userId);
+        System.out.println("内网代理端通道关闭：" + ctx.channel());
         ctx.close();
+
     }
 
 }

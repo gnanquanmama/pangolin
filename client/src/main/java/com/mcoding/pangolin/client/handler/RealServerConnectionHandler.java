@@ -20,17 +20,16 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) {
-
         byte[] content = ByteBufUtil.getBytes(byteBuf);
 
         String userId = ctx.channel().attr(Constants.USER_ID).get();
         Message respMsg = new Message();
         respMsg.setType(Message.TRANSFER);
-        respMsg.setUserId("1");
+        respMsg.setUserId(userId);
         respMsg.setData(content);
 
         try {
-            System.out.println("real server response content : " + new String(content, "UTF-8"));
+            System.out.println("real server response content : " + content.length);
         } catch (Exception e) {
             e.printStackTrace();
         }

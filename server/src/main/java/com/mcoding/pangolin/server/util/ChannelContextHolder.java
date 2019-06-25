@@ -48,6 +48,10 @@ public class ChannelContextHolder {
         return userServerChannel.get(userId);
     }
 
+    public static void closeAllChannel(String userId) {
+        closeProxyServerChannel(userId);
+        closeUserServerChannel(userId);
+    }
 
 
 }
