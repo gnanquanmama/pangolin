@@ -1,5 +1,6 @@
 package com.mcoding.pangolin.client.container;
 
+import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.handler.ProxyClientChannelHandler;
 import com.mcoding.pangolin.client.handler.RealServerConnectionHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
@@ -12,6 +13,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,17 +21,15 @@ import java.util.concurrent.TimeUnit;
  * @author wzt on 2019/6/19.
  * @version 1.0
  */
+@Slf4j
 public class ClientContainer implements ChannelStatusListener {
 
-    private String proxyServerHost;
-    private Integer proxyPort;
-
+    private ProxyInfo proxyInfo;
     private Bootstrap proxyServerBootstrap;
     private Bootstrap realServerBootstrap;
 
-    public ClientContainer(String proxyServerHost, Integer proxyPort) {
-        this.proxyServerHost = proxyServerHost;
-        this.proxyPort = proxyPort;
+    public ClientContainer(ProxyInfo proxyInfo) {
+        this.proxyInfo = proxyInfo;
         this.init();
     }
 
@@ -41,7 +41,7 @@ public class ClientContainer implements ChannelStatusListener {
         realServerBootstrap.channel(NioSocketChannel.class);
         realServerBootstrap.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT);
         realServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        realServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, Integer.MAX_VALUE));
+        realServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 1024));
         realServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
@@ -59,7 +59,7 @@ public class ClientContainer implements ChannelStatusListener {
             public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new ObjectEncoder());
                 ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-                ch.pipeline().addLast(new ProxyClientChannelHandler(realServerBootstrap, ClientContainer.this));
+                ch.pipeline().addLast(new ProxyClientChannelHandler(proxyInfo, realServerBootstrap, ClientContainer.this));
             }
         });
 
@@ -67,12 +67,16 @@ public class ClientContainer implements ChannelStatusListener {
 
 
     private void connectProxyServer() throws Exception {
+        String proxyServerHost = proxyInfo.getProxyServerHost();
+        int proxyPort = proxyInfo.getProxyServerPort();
+
         ChannelFuture channelFuture = proxyServerBootstrap.connect(proxyServerHost, proxyPort).sync();
+
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    System.out.println("连接代理服务器成功~~~");
+                    log.info("EVENT=连接代理服务器|HOST={}|PORT={}|CHANNEL={}", proxyServerHost, proxyPort, future.channel());
 
                 } else {
                     TimeUnit.SECONDS.sleep(2);

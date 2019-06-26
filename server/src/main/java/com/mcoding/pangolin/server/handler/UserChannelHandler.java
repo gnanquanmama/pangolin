@@ -9,13 +9,16 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 /**
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
+@Slf4j
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
 
@@ -30,43 +33,63 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         byte[] data = ByteBufUtil.getBytes(msg);
         message.setData(data);
 
-        ChannelContextHolder.getProxyServerChannel(userId).writeAndFlush(message);
+        Channel proxyServerChannel = ChannelContextHolder.getProxyServerChannel(userId);
+
+        if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
+            log.warn("EVENT=关闭代理服务代理管道{}", ctx.channel());
+            ctx.close();
+            return;
+        }
+
+        proxyServerChannel.writeAndFlush(message);
     }
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().localAddress();
-        int port = socketAddress.getPort();
+        InetSocketAddress localSocketAddress = (InetSocketAddress) ctx.channel().localAddress();
+        int port = localSocketAddress.getPort();
 
         String userId = UserTable.getUserToPortMap().inverse().get(port);
         ctx.channel().attr(Constants.USER_ID).set(userId);
 
         Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(userId);
         if (proxyChannel == null) {
-            System.out.println("代理客户端通道还未建立");
+            log.warn("代理客户端通道还未建立");
             ctx.channel().close();
-        } else if (!proxyChannel.isActive()) {
-            System.out.println("代理客户端已不活动");
-            ChannelContextHolder.closeProxyServerChannel(userId);
-            ctx.channel().close();
-        } else {
-            System.out.println("公网代理端通道开启: " + ctx.channel());
-            ChannelContextHolder.addUserServerChannel(userId, ctx.channel());
+            return;
         }
 
+        if (!proxyChannel.isActive()) {
+            System.out.println();
+            log.warn("EVENT=关闭未激活代理客户端通道{}", ctx.channel());
+            ChannelContextHolder.closeProxyServerChannel(userId);
+            ctx.channel().close();
+            return;
+        }
+
+        log.info("EVENT=激活公网代理端通道:{}", ctx.channel());
+        Channel currentChannel = ChannelContextHolder.getUserServerChannel(userId);
+        if (Objects.nonNull(currentChannel)) {
+            log.info("端口{}通道{}已建立，不保存新的通道", ctx.channel(), port);
+            ctx.close();
+            return;
+        }
+
+        ChannelContextHolder.addUserServerChannel(userId, ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String userId = ctx.channel().attr(Constants.USER_ID).get();
         ChannelContextHolder.closeUserServerChannel(userId);
-        System.out.println("公网代理端通道关闭: " + ctx.channel());
         ctx.close();
+        log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.getCause().printStackTrace();
     }
+
 }

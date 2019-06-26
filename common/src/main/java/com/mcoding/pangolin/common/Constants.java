@@ -9,5 +9,6 @@ import io.netty.util.AttributeKey;
 public interface Constants {
 
     AttributeKey<String> USER_ID = AttributeKey.newInstance("user_id");
+    AttributeKey<Integer> PUBLIC_PORT = AttributeKey.newInstance("public_port");
 
 }

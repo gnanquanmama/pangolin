@@ -1,0 +1,10 @@
+[
+  {
+    "userId": "1",
+    "publicPort": 9797
+  },
+  {
+    "userId": "2",
+    "publicPort": 9798
+  }
+]

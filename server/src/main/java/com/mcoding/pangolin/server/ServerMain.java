@@ -2,6 +2,8 @@ package com.mcoding.pangolin.server;
 
 import com.mcoding.pangolin.server.container.ProxyServerContainer;
 
+import java.util.Objects;
+
 /**
  * @author wzt on 2019/6/17.
  * @version 1.0
@@ -9,7 +11,12 @@ import com.mcoding.pangolin.server.container.ProxyServerContainer;
 public class ServerMain {
 
     public static void main(String[] args) {
-        new ProxyServerContainer( 7979).start();
+        int defaultServerPort = 7979;
+        if (Objects.nonNull(args) && args.length > 0) {
+            defaultServerPort = Integer.valueOf(args[0]);
+        }
+
+        new ProxyServerContainer( defaultServerPort).start();
     }
 
 }

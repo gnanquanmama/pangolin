@@ -1,25 +1,56 @@
 package com.mcoding.pangolin.server.user;
 
-import com.google.common.collect.BiMap;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
-import java.util.Map;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
+@Slf4j
 public class UserTable {
 
     private static HashBiMap<String, Integer> userToPortMap = HashBiMap.create();
 
+
     static {
-        userToPortMap.put("1", 9797);
+        InputStream inputStream = UserTable.class.getResourceAsStream("/user.json");
+
+        String userJson = "";
+        try {
+            userJson = IOUtils.toString(inputStream, "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<PublicPortConfig> publicPortConfigList = JSON.parseObject(userJson,
+                new TypeReference<List<PublicPortConfig>>() {
+                });
+
+        log.info("EVENT=读取公网端口配置|CONTENT={}", JSON.toJSONString(publicPortConfigList));
+
+
+        for (PublicPortConfig publicPortConfig : publicPortConfigList) {
+            userToPortMap.put(publicPortConfig.getUserId(), publicPortConfig.getPublicPort());
+        }
+
     }
 
-    public static HashBiMap<String, Integer> getUserToPortMap(){
+    public static HashBiMap<String, Integer> getUserToPortMap() {
         return userToPortMap;
     }
 
+    @Data
+    private static class PublicPortConfig {
+        private String userId;
+        private Integer publicPort;
+    }
 }
+

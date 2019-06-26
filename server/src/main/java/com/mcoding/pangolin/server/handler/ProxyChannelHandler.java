@@ -7,6 +7,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
+@Slf4j
 public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
 
     @Override
@@ -43,20 +45,20 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
         Channel userChannel = ChannelContextHolder.getUserServerChannel(userId);
         if (Objects.nonNull(userChannel) && userChannel.isWritable()) {
             userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData()));
-            System.out.println("传输数据：" + userChannel);
+            log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, msg.getData().length);
         }
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("内网代理端通道开启：" + ctx.channel());
+        log.info("EVENT=激活内网代理端通道{}", ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String userId = ctx.channel().attr(Constants.USER_ID).get();
         ChannelContextHolder.closeUserServerChannel(userId);
-        System.out.println("内网代理端通道关闭：" + ctx.channel());
+        log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());
         ctx.close();
 
     }

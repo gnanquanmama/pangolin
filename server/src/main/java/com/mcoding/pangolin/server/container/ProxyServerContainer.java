@@ -13,11 +13,13 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
+@Slf4j
 public class ProxyServerContainer {
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
@@ -38,9 +40,11 @@ public class ProxyServerContainer {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, Integer.MAX_VALUE))
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 10))
+                .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -55,8 +59,8 @@ public class ProxyServerContainer {
             ChannelFuture f = serverBootstrap.bind(serverPort).sync();
             f.addListener(new ChannelFutureListener() {
                 @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    System.out.println("开启基础管道服务端口: " + serverPort);
+                public void operationComplete(ChannelFuture future) {
+                    log.info("EVENT=开启基础管道服务端口[{}]", serverPort);
                 }
             });
         } catch (Exception e) {
@@ -69,9 +73,11 @@ public class ProxyServerContainer {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, Integer.MAX_VALUE))
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 10))
+                .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -83,7 +89,7 @@ public class ProxyServerContainer {
         UserTable.getUserToPortMap().forEach((userId, proxyPort) -> {
             try {
                 ChannelFuture f = serverBootstrap.bind(proxyPort).sync();
-                f.addListener(future -> System.out.println("开启公网访问端口成功：" + proxyPort));
+                f.addListener(future -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
             } catch (Exception e) {
                 e.printStackTrace();
             }
