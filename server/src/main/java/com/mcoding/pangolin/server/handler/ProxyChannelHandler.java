@@ -1,6 +1,7 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.MessageType;
 import com.mcoding.pangolin.common.Constants;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.Unpooled;
@@ -37,13 +38,13 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
         switch (msg.getType()) {
-            case Message.AUTH:
+            case MessageType.AUTH:
                 handleAuth(ctx, msg);
                 break;
-            case Message.CONNECT:
+            case MessageType.CONNECT:
                 handleConnect(ctx, msg);
                 break;
-            case Message.TRANSFER:
+            case MessageType.TRANSFER:
                 handleTransfer(msg);
                 break;
             default:

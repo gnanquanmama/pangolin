@@ -2,6 +2,7 @@ package com.mcoding.pangolin.client.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.MessageType;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
@@ -36,7 +37,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
         // 发送认证私钥
         Message connectMsg = new Message();
         connectMsg.setPrivateKey(proxyInfo.getPrivateKey());
-        connectMsg.setType(Message.AUTH);
+        connectMsg.setType(MessageType.AUTH);
         ctx.channel().writeAndFlush(connectMsg);
 
         ChannelContextHolder.addProxyChannel(ctx.channel());
@@ -45,13 +46,13 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Message message) {
         switch (message.getType()) {
-            case Message.DISCONNECT:
+            case MessageType.DISCONNECT:
                 this.handleDisconnect(ctx, message);
                 break;
-            case Message.CONNECT:
+            case MessageType.CONNECT:
                 this.handleConnectedMessage(ctx, message);
                 break;
-            case Message.TRANSFER:
+            case MessageType.TRANSFER:
                 this.handleTransfer(ctx, message);
                 break;
             default:
@@ -119,7 +120,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
 
                     Message confirmConnectMsg = new Message();
                     confirmConnectMsg.setSessionId(sessionId);
-                    confirmConnectMsg.setType(Message.CONNECT);
+                    confirmConnectMsg.setType(MessageType.CONNECT);
 
                     ctx.channel().writeAndFlush(confirmConnectMsg);
                 } else {

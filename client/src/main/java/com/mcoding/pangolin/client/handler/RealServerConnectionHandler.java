@@ -1,6 +1,7 @@
 package com.mcoding.pangolin.client.handler;
 
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.MessageType;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
 import com.mcoding.pangolin.common.Constants;
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
@@ -30,7 +31,7 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
 
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         Message respMsg = new Message();
-        respMsg.setType(Message.TRANSFER);
+        respMsg.setType(MessageType.TRANSFER);
         respMsg.setSessionId(sessionId);
         respMsg.setData(content);
 

@@ -1,6 +1,7 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.MessageType;
 import com.mcoding.pangolin.common.Constants;
 import com.mcoding.pangolin.server.user.UserTable;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
@@ -35,7 +36,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
         Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
         Message disconnectMsg = new Message();
-        disconnectMsg.setType(Message.DISCONNECT);
+        disconnectMsg.setType(MessageType.DISCONNECT);
         disconnectMsg.setSessionId(sessionId);
         proxyChannel.writeAndFlush(disconnectMsg);
 
@@ -47,7 +48,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
         Message message = new Message();
-        message.setType(Message.TRANSFER);
+        message.setType(MessageType.TRANSFER);
         message.setSessionId(sessionId);
 
         byte[] data = ByteBufUtil.getBytes(msg);
@@ -95,7 +96,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
         Message connectMsg = new Message();
         connectMsg.setSessionId(sessionId);
-        connectMsg.setType(Message.CONNECT);
+        connectMsg.setType(MessageType.CONNECT);
         proxyChannel.writeAndFlush(connectMsg);
 
         ChannelContextHolder.addUserServerChannel(sessionId, userChannel);
