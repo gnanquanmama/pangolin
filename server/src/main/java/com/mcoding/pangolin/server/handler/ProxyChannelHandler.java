@@ -19,6 +19,8 @@ import java.util.Objects;
 public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
 
 
+    private static Long totalSize = 0L;
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.info("EVENT=激活内网代理端通道{}", ctx.channel());
@@ -63,10 +65,14 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
 
     private void handleTransfer(Message msg) {
         Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
-        if (Objects.nonNull(userChannel) && userChannel.isWritable()) {
-            userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData()));
-            log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, msg.getData().length);
-        }
+        userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData()));
+        log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, totalSize += msg.getData().length);
     }
 
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        log.info("event=代理管道可写状态变化" + ctx.channel().isWritable());
+
+        super.channelWritabilityChanged(ctx);
+    }
 }

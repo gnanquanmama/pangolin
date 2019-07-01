@@ -45,6 +45,9 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Message message) {
         switch (message.getType()) {
+            case Message.DISCONNECT:
+                this.handleDisconnect(ctx, message);
+                break;
             case Message.CONNECT:
                 this.handleConnectedMessage(ctx, message);
                 break;
@@ -56,9 +59,10 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
         }
     }
 
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.warn("EVENT=用户通道掉线，关闭所有通道{}", ChannelContextHolder.getAllChannelList());
+        log.warn("EVENT=代理通道掉线，关闭所有通道{}", ChannelContextHolder.getAllChannelList());
 
         ChannelContextHolder.closeAll();
         this.clientContainer.channelInActive(ctx);
@@ -68,6 +72,12 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
+    }
+
+    private void handleDisconnect(ChannelHandlerContext ctx, Message message) {
+        String sessionId = message.getSessionId();
+        ChannelContextHolder.closeUserChannel(sessionId);
+        log.info("EVENT=公网访问连接断开，关闭被代理服务器通道");
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, Message message) {

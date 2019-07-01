@@ -26,10 +26,19 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        String userId = ctx.channel().attr(Constants.SESSION_ID).get();
-        ChannelContextHolder.closeUserServerChannel(userId);
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
+        String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
+
+        ChannelContextHolder.closeUserServerChannel(sessionId);
         ctx.close();
         log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
+
+        Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
+        Message disconnectMsg = new Message();
+        disconnectMsg.setType(Message.DISCONNECT);
+        disconnectMsg.setSessionId(sessionId);
+        proxyChannel.writeAndFlush(disconnectMsg);
+
     }
 
     @Override

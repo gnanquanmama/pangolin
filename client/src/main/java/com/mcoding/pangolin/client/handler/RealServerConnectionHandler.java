@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RealServerConnectionHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
+    private static long totalSize = 0L;
+
     @Override
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) {
         byte[] content = ByteBufUtil.getBytes(byteBuf);
@@ -32,7 +34,7 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
         respMsg.setSessionId(sessionId);
         respMsg.setData(content);
 
-        log.info("EVENT=被代理服务返回信息|字节长度={}", content.length);
+        log.info("EVENT=被代理服务返回信息|字节长度={}", totalSize += content.length);
 
         Channel proxyChannel = ChannelContextHolder.getProxyChannel();
         proxyChannel.writeAndFlush(respMsg);
@@ -63,5 +65,11 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        log.info("event=管道可写状态变化"+ ctx.channel().isWritable());
+        super.channelWritabilityChanged(ctx);
     }
 }

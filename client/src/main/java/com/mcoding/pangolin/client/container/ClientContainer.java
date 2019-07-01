@@ -53,9 +53,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         realServerBootstrap = new Bootstrap();
         realServerBootstrap.group(workerGroup);
         realServerBootstrap.channel(NioSocketChannel.class);
-        realServerBootstrap.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT);
         realServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        realServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 10));
         realServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
@@ -66,8 +64,6 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         proxyServerBootstrap = new Bootstrap();
         proxyServerBootstrap.group(workerGroup);
         proxyServerBootstrap.channel(NioSocketChannel.class);
-        proxyServerBootstrap.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT);
-        proxyServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 10));
         proxyServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         proxyServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override

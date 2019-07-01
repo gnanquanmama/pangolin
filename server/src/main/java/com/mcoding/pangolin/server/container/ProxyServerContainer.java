@@ -53,7 +53,6 @@ public class ProxyServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, Integer.MAX_VALUE))
                 .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -63,7 +62,8 @@ public class ProxyServerContainer implements LifeCycle {
                         pipeline.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                         pipeline.addLast(new ProxyChannelHandler());
                     }
-                });
+                })
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, Integer.MAX_VALUE));
 
         try {
             ChannelFuture f = serverBootstrap.bind(serverPort).sync();
@@ -90,7 +90,6 @@ public class ProxyServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, Integer.MAX_VALUE))
                 .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
