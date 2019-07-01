@@ -1,8 +1,8 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.Message;
-import com.mcoding.pangolin.MessageType;
 import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.protocol.MessageType;
+import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -10,17 +10,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Objects;
-
 /**
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
 @Slf4j
-public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
-
-
-    private static Long totalSize = 0L;
+public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -36,7 +31,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         switch (msg.getType()) {
             case MessageType.AUTH:
                 handleAuth(ctx, msg);
@@ -52,22 +47,22 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<Message> {
         }
     }
 
-    private void handleConnect(ChannelHandlerContext ctx, Message msg) {
+    private void handleConnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
         userChannel.config().setAutoRead(true);
     }
 
-    private void handleAuth(ChannelHandlerContext ctx, Message msg) {
+    private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         String privateKey = msg.getPrivateKey();
         ctx.channel().attr(Constants.PRIVATE_KEY).set(privateKey);
         ChannelContextHolder.addProxyServerChannel(privateKey, ctx.channel());
         log.info("EVENT=连接认证处理|DESC=认证通过|PRIVATE_KEY={}", privateKey);
     }
 
-    private void handleTransfer(Message msg) {
+    private void handleTransfer(PMessageOuterClass.PMessage msg) {
         Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
-        userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData()));
-        log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, totalSize += msg.getData().length);
+        userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
+        log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, msg.getData().toByteArray().length);
     }
 
     @Override

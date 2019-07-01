@@ -1,8 +1,9 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.Message;
-import com.mcoding.pangolin.MessageType;
+import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.protocol.MessageType;
+import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.user.UserTable;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.ByteBuf;
@@ -35,9 +36,12 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
 
         Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
-        Message disconnectMsg = new Message();
-        disconnectMsg.setType(MessageType.DISCONNECT);
-        disconnectMsg.setSessionId(sessionId);
+
+        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.DISCONNECT)
+                .setSessionId(sessionId)
+                .build();
+
         proxyChannel.writeAndFlush(disconnectMsg);
 
     }
@@ -46,13 +50,13 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-
-        Message message = new Message();
-        message.setType(MessageType.TRANSFER);
-        message.setSessionId(sessionId);
-
         byte[] data = ByteBufUtil.getBytes(msg);
-        message.setData(data);
+
+        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.TRANSFER)
+                .setSessionId(sessionId)
+                .setData(ByteString.copyFrom(data))
+                .build();
 
         Channel proxyServerChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
         if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
@@ -61,7 +65,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             return;
         }
 
-        proxyServerChannel.writeAndFlush(message);
+        proxyServerChannel.writeAndFlush(disconnectMsg);
     }
 
 
@@ -94,9 +98,12 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         userChannel.attr(Constants.SESSION_ID).set(sessionId);
         userChannel.attr(Constants.PRIVATE_KEY).set(privateKey);
 
-        Message connectMsg = new Message();
-        connectMsg.setSessionId(sessionId);
-        connectMsg.setType(MessageType.CONNECT);
+
+        PMessageOuterClass.PMessage connectMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.CONNECT)
+                .setSessionId(sessionId)
+                .build();
+
         proxyChannel.writeAndFlush(connectMsg);
 
         ChannelContextHolder.addUserServerChannel(sessionId, userChannel);

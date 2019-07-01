@@ -1,4 +1,4 @@
-package com.mcoding.pangolin;
+package com.mcoding.pangolin.protocol;
 
 /**
  * @author wzt on 2019/7/1.

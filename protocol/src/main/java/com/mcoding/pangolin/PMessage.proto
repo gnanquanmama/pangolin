@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.mcoding.pangolin.protocol";
+
+message PMessage {
+  string privateKey = 1;
+  string sessionId = 2;
+  int32 type = 3;
+  bytes data = 4;
+}

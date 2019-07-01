@@ -1,16 +1,15 @@
 package com.mcoding.pangolin.client.handler;
 
-import com.mcoding.pangolin.Message;
-import com.mcoding.pangolin.MessageType;
+import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
 import com.mcoding.pangolin.common.Constants;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+import com.mcoding.pangolin.protocol.MessageType;
+import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,19 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RealServerConnectionHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private static long totalSize = 0L;
-
     @Override
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) {
         byte[] content = ByteBufUtil.getBytes(byteBuf);
 
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
-        Message respMsg = new Message();
-        respMsg.setType(MessageType.TRANSFER);
-        respMsg.setSessionId(sessionId);
-        respMsg.setData(content);
 
-        log.info("EVENT=被代理服务返回信息|字节长度={}", totalSize += content.length);
+        PMessageOuterClass.PMessage respMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.TRANSFER)
+                .setData(ByteString.copyFrom(content))
+                .setSessionId(sessionId)
+                .build();
+
+        log.info("EVENT=被代理服务返回信息|字节长度={}", content.length);
 
         Channel proxyChannel = ChannelContextHolder.getProxyChannel();
         proxyChannel.writeAndFlush(respMsg);

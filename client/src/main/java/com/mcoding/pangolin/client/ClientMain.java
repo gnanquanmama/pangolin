@@ -48,7 +48,7 @@ public class ClientMain {
         }
         String privateKey = cmd.getOptionValue("private_key");
         if (StringUtil.isNullOrEmpty(privateKey)) {
-            privateKey = "1";
+            privateKey = "qaz123";
         }
 
         ProxyInfo proxyInfo = new ProxyInfo();

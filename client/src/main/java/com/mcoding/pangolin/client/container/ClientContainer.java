@@ -5,15 +5,16 @@ import com.mcoding.pangolin.client.handler.ProxyClientChannelHandler;
 import com.mcoding.pangolin.client.handler.RealServerConnectionHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
 import com.mcoding.pangolin.common.LifeCycle;
+import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -68,9 +69,13 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         proxyServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(new ObjectEncoder());
-                ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-                ch.pipeline().addLast(new ProxyClientChannelHandler(proxyInfo, realServerBootstrap, ClientContainer.this));
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(new ProtobufVarint32FrameDecoder());
+                pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
+                pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
+                pipeline.addLast(new ProtobufEncoder());
+
+                pipeline.addLast(new ProxyClientChannelHandler(proxyInfo, realServerBootstrap, ClientContainer.this));
             }
         });
 

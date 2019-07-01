@@ -1,10 +1,10 @@
 [
   {
-    "privateKey": "1",
+    "privateKey": "qaz123",
     "publicPort": 9797
   },
   {
-    "privateKey": "2",
+    "privateKey": "wsx456",
     "publicPort": 9798
   }
 ]
