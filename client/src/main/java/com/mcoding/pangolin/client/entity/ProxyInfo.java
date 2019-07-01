@@ -12,7 +12,7 @@ public class ProxyInfo {
     private String realServerHost;
     private Integer realServerPort;
 
-    private String userId;
+    private String privateKey;
     private String proxyServerHost;
     private Integer proxyServerPort;
 

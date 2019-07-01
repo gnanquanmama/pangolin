@@ -38,7 +38,7 @@ public class UserTable {
 
 
         for (PublicPortConfig publicPortConfig : publicPortConfigList) {
-            userToPortMap.put(publicPortConfig.getUserId(), publicPortConfig.getPublicPort());
+            userToPortMap.put(publicPortConfig.getPrivateKey(), publicPortConfig.getPublicPort());
         }
 
     }
@@ -49,7 +49,7 @@ public class UserTable {
 
     @Data
     private static class PublicPortConfig {
-        private String userId;
+        private String privateKey;
         private Integer publicPort;
     }
 }

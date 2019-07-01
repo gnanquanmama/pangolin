@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author wzt on 2019/6/20.
@@ -21,20 +22,29 @@ import java.util.Objects;
 @Slf4j
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
+    private static AtomicLong atomicLong = new AtomicLong();
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        String userId = ctx.channel().attr(Constants.SESSION_ID).get();
+        ChannelContextHolder.closeUserServerChannel(userId);
+        ctx.close();
+        log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
-        String userId = ctx.channel().attr(Constants.USER_ID).get();
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
+        String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
         Message message = new Message();
         message.setType(Message.TRANSFER);
-        message.setUserId(userId);
+        message.setSessionId(sessionId);
 
         byte[] data = ByteBufUtil.getBytes(msg);
         message.setData(data);
 
-        Channel proxyServerChannel = ChannelContextHolder.getProxyServerChannel(userId);
-
+        Channel proxyServerChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
         if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
             log.warn("EVENT=关闭代理服务代理管道{}", ctx.channel());
             ctx.close();
@@ -50,10 +60,8 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         InetSocketAddress localSocketAddress = (InetSocketAddress) ctx.channel().localAddress();
         int port = localSocketAddress.getPort();
 
-        String userId = UserTable.getUserToPortMap().inverse().get(port);
-        ctx.channel().attr(Constants.USER_ID).set(userId);
-
-        Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(userId);
+        String privateKey = UserTable.getUserToPortMap().inverse().get(port);
+        Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
         if (proxyChannel == null) {
             log.warn("代理客户端通道还未建立");
             ctx.channel().close();
@@ -63,33 +71,34 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         if (!proxyChannel.isActive()) {
             System.out.println();
             log.warn("EVENT=关闭未激活代理客户端通道{}", ctx.channel());
-            ChannelContextHolder.closeProxyServerChannel(userId);
+            ChannelContextHolder.closeProxyServerChannel(privateKey);
             ctx.channel().close();
             return;
         }
 
         log.info("EVENT=激活公网代理端通道:{}", ctx.channel());
-        Channel currentChannel = ChannelContextHolder.getUserServerChannel(userId);
-        if (Objects.nonNull(currentChannel)) {
-            log.info("端口{}通道{}已建立，不保存新的通道", ctx.channel(), port);
-            ctx.close();
-            return;
-        }
+        Channel userChannel = ctx.channel();
+        userChannel.config().setAutoRead(false);
 
-        ChannelContextHolder.addUserServerChannel(userId, ctx.channel());
-    }
+        String sessionId = this.generateSessionId();
+        userChannel.attr(Constants.SESSION_ID).set(sessionId);
+        userChannel.attr(Constants.PRIVATE_KEY).set(privateKey);
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        String userId = ctx.channel().attr(Constants.USER_ID).get();
-        ChannelContextHolder.closeUserServerChannel(userId);
-        ctx.close();
-        log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
+        Message connectMsg = new Message();
+        connectMsg.setSessionId(sessionId);
+        connectMsg.setType(Message.CONNECT);
+        proxyChannel.writeAndFlush(connectMsg);
+
+        ChannelContextHolder.addUserServerChannel(sessionId, userChannel);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.getCause().printStackTrace();
+    }
+
+    private String generateSessionId() {
+        return String.valueOf(atomicLong.incrementAndGet());
     }
 
 }

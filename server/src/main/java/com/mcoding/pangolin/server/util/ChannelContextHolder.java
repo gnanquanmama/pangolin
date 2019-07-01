@@ -16,41 +16,37 @@ public class ChannelContextHolder {
     private static Map<String, Channel> userServerChannel = Maps.newConcurrentMap();
 
 
-    public static void addProxyServerChannel(String userId, Channel channel) {
-        proxyServerChannel.put(userId, channel);
+    public static void addProxyServerChannel(String privateKey, Channel channel) {
+        proxyServerChannel.put(privateKey, channel);
     }
 
-    public static void addUserServerChannel(String userId, Channel channel) {
-        userServerChannel.put(userId, channel);
+    public static void addUserServerChannel(String sessionId, Channel channel) {
+        userServerChannel.put(sessionId, channel);
     }
 
-    public static void closeProxyServerChannel(String userId) {
-        Channel channel = proxyServerChannel.get(userId);
+    public static void closeProxyServerChannel(String privateKey) {
+        Channel channel = proxyServerChannel.get(privateKey);
         if (Objects.nonNull(channel)) {
             channel.close();
-            proxyServerChannel.remove(userId);
+            proxyServerChannel.remove(privateKey);
         }
     }
 
-    public static void closeUserServerChannel(String userId) {
-        Channel channel = userServerChannel.get(userId);
+    public static void closeUserServerChannel(String sessionId) {
+        System.out.println(sessionId);
+        Channel channel = userServerChannel.get(sessionId);
         if (Objects.nonNull(channel)) {
             channel.close();
-            userServerChannel.remove(userId);
+            userServerChannel.remove(sessionId);
         }
     }
 
-    public static Channel getProxyServerChannel(String userId) {
-        return proxyServerChannel.get(userId);
+    public static Channel getProxyServerChannel(String privateKey) {
+        return proxyServerChannel.get(privateKey);
     }
 
-    public static Channel getUserServerChannel(String userId) {
-        return userServerChannel.get(userId);
-    }
-
-    public static void closeAllChannel(String userId) {
-        closeProxyServerChannel(userId);
-        closeUserServerChannel(userId);
+    public static Channel getUserServerChannel(String sessionId) {
+        return userServerChannel.get(sessionId);
     }
 
 

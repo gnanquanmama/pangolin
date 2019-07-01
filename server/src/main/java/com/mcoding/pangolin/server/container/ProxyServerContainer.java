@@ -1,5 +1,6 @@
 package com.mcoding.pangolin.server.container;
 
+import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.server.handler.ProxyChannelHandler;
 import com.mcoding.pangolin.server.handler.UserChannelHandler;
 import com.mcoding.pangolin.server.user.UserTable;
@@ -20,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
  * @version 1.0
  */
 @Slf4j
-public class ProxyServerContainer {
+public class ProxyServerContainer implements LifeCycle {
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -30,20 +31,29 @@ public class ProxyServerContainer {
         this.serverPort = serverPort;
     }
 
+    @Override
     public void start() {
-        this.initProxyServer();
-        this.startUserPort();
+        this.startProxyServer();
+        this.startUserServer();
     }
 
+    @Override
+    public void close() {
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+    }
 
-    private void initProxyServer() {
+    /**
+     * 启动代理服务器
+     */
+    private void startProxyServer() {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 10))
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, Integer.MAX_VALUE))
                 .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -66,17 +76,21 @@ public class ProxyServerContainer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
 
-    private void startUserPort() {
+    /**
+     * 开启用户外网访问端口服务
+     */
+    private void startUserServer() {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 10))
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, Integer.MAX_VALUE))
                 .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override

@@ -3,6 +3,8 @@ package com.mcoding.pangolin.client.util;
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,25 +13,38 @@ import java.util.Map;
  */
 public class ChannelContextHolder {
 
-    private static String PROXY_CHANNEL = "proxy_channel";
-    private static String USER_CHANNEL = "user_channel";
+    private static Channel proxyChannel = null;
 
     private static Map<String, Channel> channelMap = Maps.newConcurrentMap();
 
     public static void addProxyChannel(Channel channel) {
-        channelMap.put(PROXY_CHANNEL, channel);
+        proxyChannel = channel;
     }
 
     public static Channel getProxyChannel() {
-        return channelMap.get(PROXY_CHANNEL);
+        return proxyChannel;
     }
 
-    public static void addUserChannel(Channel channel) {
-        channelMap.put(USER_CHANNEL, channel);
+    public static void addUserChannel(String sessionId, Channel channel) {
+        channelMap.put(sessionId, channel);
     }
 
-    public static Channel getUserChannel() {
-        return channelMap.get(USER_CHANNEL);
+    public static Channel getUserChannel(String sessionId) {
+        return channelMap.get(sessionId);
+    }
+
+
+    public static Map<String, Channel> getAllChannelList() {
+        return channelMap;
+    }
+
+    public static void closeUserChannel(String sessionId) {
+        Channel channel = channelMap.get(sessionId);
+        if (channel != null) {
+            channel.close();
+        }
+
+        channelMap.remove(sessionId);
     }
 
     public static void closeAll() {

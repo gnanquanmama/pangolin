@@ -12,10 +12,12 @@ import java.io.Serializable;
 @Data
 public class Message implements Serializable {
 
-    public static final byte CONNECTING = 1;
-    public static final byte TRANSFER = 2;
+    public static final byte AUTH= 1;
+    public static final byte CONNECT = 2;
+    public static final byte TRANSFER = 3;
 
-    private String userId;
+    private String privateKey;
+    private String sessionId;
     private byte type;
     private byte[] data;
 

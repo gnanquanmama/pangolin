@@ -1,5 +1,6 @@
 package com.mcoding.pangolin.server;
 
+import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.server.container.ProxyServerContainer;
 
 import java.util.Objects;
@@ -16,7 +17,7 @@ public class ServerMain {
             defaultServerPort = Integer.valueOf(args[0]);
         }
 
-        new ProxyServerContainer( defaultServerPort).start();
+        PangolinEngine.start(new ProxyServerContainer(defaultServerPort));
     }
 
 }

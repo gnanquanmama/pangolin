@@ -1,13 +1,15 @@
 package com.mcoding.pangolin.client.handler;
 
-import com.mcoding.pangolin.client.util.ChannelContextHolder;
 import com.mcoding.pangolin.Message;
+import com.mcoding.pangolin.client.util.ChannelContextHolder;
 import com.mcoding.pangolin.common.Constants;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,10 +26,10 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) {
         byte[] content = ByteBufUtil.getBytes(byteBuf);
 
-        String userId = ctx.channel().attr(Constants.USER_ID).get();
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         Message respMsg = new Message();
         respMsg.setType(Message.TRANSFER);
-        respMsg.setUserId(userId);
+        respMsg.setSessionId(sessionId);
         respMsg.setData(content);
 
         log.info("EVENT=被代理服务返回信息|字节长度={}", content.length);
@@ -43,15 +45,18 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        ChannelContextHolder.addUserChannel(ctx.channel());
+        log.info("EVENT=激活被代理通道");
+
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
+        ChannelContextHolder.addUserChannel(sessionId, ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.warn("EVENT=用户通道掉线，关闭代理通道{}和用户通道{}",
-                ChannelContextHolder.getProxyChannel(), ChannelContextHolder.getUserChannel());
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
+        log.warn("EVENT=用户通道掉线，关闭所有通道{}", ChannelContextHolder.getUserChannel(sessionId));
 
-        ChannelContextHolder.closeAll();
+        ChannelContextHolder.closeUserChannel(sessionId);
     }
 
     @Override

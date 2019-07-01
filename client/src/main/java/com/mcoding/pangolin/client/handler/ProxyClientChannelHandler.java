@@ -1,13 +1,18 @@
 package com.mcoding.pangolin.client.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.mcoding.pangolin.Message;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
+import com.mcoding.pangolin.common.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author wzt on 2019/6/17.
@@ -27,55 +32,33 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Message message) {
-        switch (message.getType()) {
-            case Message.TRANSFER:
-                this.handleTansfer(ctx, message);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void handleTansfer(ChannelHandlerContext ctx, Message message) {
-        Channel userChannel = ChannelContextHolder.getUserChannel();
-        userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData()));
-    }
-
-    private void handleConnectedMessage(ChannelHandlerContext ctx) {
-        String realServerHost = proxyInfo.getRealServerHost();
-        Integer realServerPort = proxyInfo.getRealServerPort();
-
-        ChannelFuture futureChannel = this.realServerBootstrap.connect(realServerHost, realServerPort);
-        futureChannel.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
-                } else {
-                    log.info("event=连接被代理服务器失败");
-                }
-            }
-        });
-
-    }
-
-    @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        this.handleConnectedMessage(ctx);
-
+        // 发送认证私钥
         Message connectMsg = new Message();
-        connectMsg.setUserId(proxyInfo.getUserId());
-        connectMsg.setType(Message.CONNECTING);
+        connectMsg.setPrivateKey(proxyInfo.getPrivateKey());
+        connectMsg.setType(Message.AUTH);
         ctx.channel().writeAndFlush(connectMsg);
 
         ChannelContextHolder.addProxyChannel(ctx.channel());
     }
 
     @Override
+    public void channelRead0(ChannelHandlerContext ctx, Message message) {
+        switch (message.getType()) {
+            case Message.CONNECT:
+                this.handleConnectedMessage(ctx, message);
+                break;
+            case Message.TRANSFER:
+                this.handleTransfer(ctx, message);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.info("EVENT=关闭已断开连接代理客户端|USER_CHANNEL={}|PROXY_CHANNEL={}",
-                ChannelContextHolder.getUserChannel(), ChannelContextHolder.getProxyChannel());
+        log.warn("EVENT=用户通道掉线，关闭所有通道{}", ChannelContextHolder.getAllChannelList());
 
         ChannelContextHolder.closeAll();
         this.clientContainer.channelInActive(ctx);
@@ -85,6 +68,55 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<Messa
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
+    }
+
+    private void handleTransfer(ChannelHandlerContext ctx, Message message) {
+        System.out.println("已建立通道类型： " + ChannelContextHolder.getAllChannelList());
+        Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
+        if (Objects.isNull(userChannel)) {
+            try{
+                TimeUnit.SECONDS.sleep(3);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        System.out.println(JSON.toJSONString(message));
+        userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData()));
+    }
+
+    private void handleConnectedMessage(ChannelHandlerContext ctx, Message message) {
+        String sessionId = message.getSessionId();
+        Channel userChannel = ChannelContextHolder.getUserChannel(sessionId);
+        if (Objects.nonNull(userChannel)) {
+            log.info("EVENT=连接被代理服务|DESC=通道已连接，不需要重新连接");
+            return;
+        }
+
+        String realServerHost = proxyInfo.getRealServerHost();
+        Integer realServerPort = proxyInfo.getRealServerPort();
+
+        ChannelFuture futureChannel = this.realServerBootstrap
+                .connect(realServerHost, realServerPort);
+        futureChannel.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) {
+                if (future.isSuccess()) {
+                    log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
+                    future.channel().attr(Constants.SESSION_ID).set(sessionId);
+                    ChannelContextHolder.addUserChannel(sessionId, futureChannel.channel());
+
+                    Message confirmConnectMsg = new Message();
+                    confirmConnectMsg.setSessionId(sessionId);
+                    confirmConnectMsg.setType(Message.CONNECT);
+
+                    ctx.channel().writeAndFlush(confirmConnectMsg);
+                } else {
+                    log.info("event=连接被代理服务器失败");
+                }
+            }
+        });
     }
 
 }

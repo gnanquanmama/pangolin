@@ -2,6 +2,7 @@ package com.mcoding.pangolin.client;
 
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
+import com.mcoding.pangolin.common.PangolinEngine;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.cli.*;
 
@@ -12,8 +13,20 @@ import org.apache.commons.cli.*;
 public class ClientMain {
 
 
-    public static void main(String[] args) throws ParseException{
+    public static void main(String[] args) throws ParseException {
+        ProxyInfo proxyInfo = buildProxyInfo(args);
+        PangolinEngine.start(new ClientContainer(proxyInfo));
+    }
 
+
+    /**
+     * 根据命令行操作构建代理机器连接信息
+     *
+     * @param args
+     * @return
+     * @throws ParseException
+     */
+    private static ProxyInfo buildProxyInfo(String[] args) throws ParseException {
         Options argOptions = buildOption();
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(argOptions, args);
@@ -33,19 +46,19 @@ public class ClientMain {
         if (StringUtil.isNullOrEmpty(realServerPort)) {
             realServerPort = "9999";
         }
-        String userId = cmd.getOptionValue("user_id");
-        if (StringUtil.isNullOrEmpty(userId)) {
-            userId = "1";
+        String privateKey = cmd.getOptionValue("private_key");
+        if (StringUtil.isNullOrEmpty(privateKey)) {
+            privateKey = "1";
         }
 
         ProxyInfo proxyInfo = new ProxyInfo();
-        proxyInfo.setUserId(userId);
+        proxyInfo.setPrivateKey(privateKey);
         proxyInfo.setRealServerHost(realServerHost);
         proxyInfo.setRealServerPort(Integer.valueOf(realServerPort));
         proxyInfo.setProxyServerHost(proxyServerHost);
         proxyInfo.setProxyServerPort(Integer.valueOf(proxyServerPort));
 
-        new ClientContainer(proxyInfo).start();
+        return proxyInfo;
     }
 
     private static Options buildOption() {

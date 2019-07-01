@@ -1,10 +1,10 @@
 [
   {
-    "userId": "1",
+    "privateKey": "1",
     "publicPort": 9797
   },
   {
-    "userId": "2",
+    "privateKey": "2",
     "publicPort": 9798
   }
 ]

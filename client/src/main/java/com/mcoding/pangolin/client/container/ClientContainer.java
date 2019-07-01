@@ -4,6 +4,7 @@ import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.handler.ProxyClientChannelHandler;
 import com.mcoding.pangolin.client.handler.RealServerConnectionHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
+import com.mcoding.pangolin.common.LifeCycle;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  */
 @Slf4j
-public class ClientContainer implements ChannelStatusListener {
+public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
     private ProxyInfo proxyInfo;
     private Bootstrap proxyServerBootstrap;
@@ -33,6 +34,19 @@ public class ClientContainer implements ChannelStatusListener {
         this.init();
     }
 
+    @Override
+    public void start() {
+        try {
+            this.connectProxyServer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void close() {
+    }
+
     private void init() {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -41,7 +55,7 @@ public class ClientContainer implements ChannelStatusListener {
         realServerBootstrap.channel(NioSocketChannel.class);
         realServerBootstrap.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT);
         realServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        realServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 1024 * 1024));
+        realServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 10));
         realServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
@@ -53,6 +67,7 @@ public class ClientContainer implements ChannelStatusListener {
         proxyServerBootstrap.group(workerGroup);
         proxyServerBootstrap.channel(NioSocketChannel.class);
         proxyServerBootstrap.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT);
+        proxyServerBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 10));
         proxyServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         proxyServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
@@ -85,15 +100,6 @@ public class ClientContainer implements ChannelStatusListener {
             }
         });
     }
-
-    public void start() {
-        try {
-            this.connectProxyServer();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     @Override
     public void channelInActive(ChannelHandlerContext channelHandlerContext) {
