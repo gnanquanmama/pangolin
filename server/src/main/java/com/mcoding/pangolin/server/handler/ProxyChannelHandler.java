@@ -1,14 +1,17 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.common.Constants;
+import com.google.protobuf.ByteString;
+import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
+import com.mcoding.pangolin.server.user.UserTable;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Objects;
 
 /**
  * @author wzt on 2019/6/20.
@@ -51,7 +54,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
     }
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
-        log.warn("event=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", msg.getSessionId());
+        log.warn("EVENT=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", msg.getSessionId());
         ChannelContextHolder.closeUserServerChannel(msg.getSessionId());
     }
 
@@ -62,6 +65,22 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
     private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         String privateKey = msg.getPrivateKey();
+
+        PMessageOuterClass.PMessage.Builder authMsgBuilder = PMessageOuterClass.PMessage.newBuilder()
+                .setSessionId(msg.getSessionId())
+                .setType(MessageType.AUTH)
+                .setPrivateKey(privateKey)
+                .setData(ByteString.copyFrom(Constants.AUTH_SUCCESS.getBytes()));
+
+        Integer publicPort = UserTable.getUserToPortMap().get(privateKey);
+        if (Objects.isNull(publicPort)) {
+            authMsgBuilder.setData(ByteString.copyFrom("私钥不存在，请在服务端配置后，再连接".getBytes()));
+            ctx.writeAndFlush(authMsgBuilder.build());
+            log.error("EVENT=认证失败，不存在PRIVATE_KEY={}", privateKey);
+            return;
+        }
+
+        ctx.writeAndFlush(authMsgBuilder.build());
         ctx.channel().attr(Constants.PRIVATE_KEY).set(privateKey);
         ChannelContextHolder.addProxyServerChannel(privateKey, ctx.channel());
         log.info("EVENT=连接认证处理|DESC=认证通过|PRIVATE_KEY={}", privateKey);

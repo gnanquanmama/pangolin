@@ -1,9 +1,10 @@
 package com.mcoding.pangolin.client.handler;
 
+import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
-import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
@@ -39,13 +40,14 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
                 .setType(MessageType.AUTH)
                 .build();
         ctx.channel().writeAndFlush(connectMsg);
-
-        ChannelContextHolder.addProxyChannel(ctx.channel());
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         switch (message.getType()) {
+            case MessageType.AUTH:
+                this.handleAuth(ctx, message);
+                break;
             case MessageType.DISCONNECT:
                 this.handleDisconnect(ctx, message);
                 break;
@@ -75,6 +77,17 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
         ctx.close();
     }
 
+    private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
+        ByteString data = message.getData();
+        if (Constants.AUTH_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
+            ChannelContextHolder.addProxyChannel(ctx.channel());
+            log.info("EVENT=认证成功");
+        } else {
+            log.error("EVENT=认证异常|DESC={}", data.toStringUtf8());
+            System.exit(0);
+        }
+    }
+
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
         ChannelContextHolder.closeUserChannel(sessionId);
@@ -85,7 +98,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
         log.info("已建立通道列表： " + ChannelContextHolder.getAllChannelList());
         Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
         if (Objects.isNull(userChannel)) {
-            try{
+            try {
                 TimeUnit.SECONDS.sleep(3);
             } catch (Exception e) {
                 e.printStackTrace();

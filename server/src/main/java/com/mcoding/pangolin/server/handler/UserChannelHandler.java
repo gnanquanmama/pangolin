@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.google.protobuf.ByteString;
-import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.user.UserTable;

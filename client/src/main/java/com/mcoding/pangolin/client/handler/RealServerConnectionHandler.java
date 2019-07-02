@@ -2,7 +2,7 @@ package com.mcoding.pangolin.client.handler;
 
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.util.ChannelContextHolder;
-import com.mcoding.pangolin.common.Constants;
+import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.buffer.ByteBuf;

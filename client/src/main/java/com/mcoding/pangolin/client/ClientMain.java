@@ -67,7 +67,7 @@ public class ClientMain {
         options.addOption("proxy_server_port", true, "");
         options.addOption("real_server_host", true, "");
         options.addOption("real_server_port", true, "");
-        options.addOption("user_id", true, "");
+        options.addOption("private_key", true, "");
 
         return options;
     }

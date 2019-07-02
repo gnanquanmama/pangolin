@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.common;
+package com.mcoding.pangolin.protocol;
 
 import io.netty.util.AttributeKey;
 
@@ -10,6 +10,8 @@ public interface Constants {
 
     AttributeKey<String> SESSION_ID = AttributeKey.newInstance("session_id");
     AttributeKey<String> PRIVATE_KEY = AttributeKey.newInstance("private_key");
-    AttributeKey<Integer> PUBLIC_PORT = AttributeKey.newInstance("public_port");
+
+    String AUTH_SUCCESS = "ok";
+    String AUTH_FAIL = "fail";
 
 }

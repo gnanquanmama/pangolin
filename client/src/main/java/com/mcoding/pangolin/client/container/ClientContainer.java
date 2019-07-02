@@ -93,13 +93,13 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     log.info("EVENT=连接代理服务器|HOST={}|PORT={}|CHANNEL={}", proxyServerHost, proxyPort, future.channel());
-
                 } else {
-                    TimeUnit.SECONDS.sleep(2);
                     connectProxyServer();
                 }
             }
         });
+
+        TimeUnit.SECONDS.sleep(5);
     }
 
     @Override
