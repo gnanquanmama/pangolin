@@ -6,14 +6,13 @@
 
 1) mvn clean package  
 
-2) java -jar pangolin_server.jar proxy_port  
+2) java -jar pangolin_server.jar 7500  
 
-3) java -jar pangolin_client.jar -proxy_server_host 127.0.0.1 -proxy_server_port proxy_port -real_server_host 127.0.0.1 -real_server_port 9999 -private_key qaz123
+3) java -jar pangolin_client.jar -p_host 127.0.0.1 -p_port 7500 -r_host 127.0.0.1 -r_port 9999 -private_key qaz123
 
 ## 说明  
-proxy_port 内网穿透服务内网可访问端口，默认为7500  
-proxy_server_host 代理服务器主机名称  
-proxy_server_port 代理服务器端口  
-real_server_host 被代理机器主机名称  
-real_server_port 被代理机器端口  
+p_host 代理服务器主机名称  
+p_port 代理服务器端口  
+r_host 被代理机器主机名称  
+r_port 被代理机器端口  
 private_key 客户端分配的私钥  
