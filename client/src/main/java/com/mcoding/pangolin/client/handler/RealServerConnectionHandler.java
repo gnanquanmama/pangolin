@@ -66,17 +66,25 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
         }
 
         ChannelContextHolder.closeUserChannel(sessionId);
+
+        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setSessionId(sessionId)
+                .setType(MessageType.DISCONNECT)
+                .build();
+        ChannelContextHolder.getProxyChannel().writeAndFlush(disconnectMsg);
+
+        log.info("EVENT=关闭公网服务连接通道|SESSION_ID={}", sessionId);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        log.error("EVENT=用户通道异常|CHANNEL={}|ERROR_DESC={}", ctx.channel(), cause.getMessage());
         ctx.close();
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        log.info("event=管道可写状态变化" + ctx.channel().isWritable());
+        log.info("EVENT=管道可写状态变化" + ctx.channel().isWritable());
         super.channelWritabilityChanged(ctx);
     }
 }

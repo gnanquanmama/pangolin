@@ -42,9 +42,17 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
             case MessageType.TRANSFER:
                 handleTransfer(msg);
                 break;
+            case MessageType.DISCONNECT:
+                handleDisconnect(ctx, msg);
+                break;
             default:
                 break;
         }
+    }
+
+    private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
+        log.warn("event=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", msg.getSessionId());
+        ChannelContextHolder.closeUserServerChannel(msg.getSessionId());
     }
 
     private void handleConnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
@@ -74,6 +82,6 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("EVENT=代理通道异常|CHANNEL={}|ERROR_MSG={}",ctx.channel(), cause.getMessage());
+        log.error("EVENT=代理通道异常|CHANNEL={}|ERROR_MSG={}", ctx.channel(), cause.getMessage());
     }
 }
