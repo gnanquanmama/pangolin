@@ -6,6 +6,7 @@ import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.user.UserTable;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
+import com.mcoding.pangolin.server.util.SessionIdProducer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private static AtomicLong atomicLong = new AtomicLong();
+    private SessionIdProducer sessionIdProducer = new SessionIdProducer();
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
@@ -94,7 +95,8 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         Channel userChannel = ctx.channel();
         userChannel.config().setAutoRead(false);
 
-        String sessionId = this.generateSessionId();
+        String sessionId = this.sessionIdProducer.generate();
+
         userChannel.attr(Constants.SESSION_ID).set(sessionId);
         userChannel.attr(Constants.PRIVATE_KEY).set(privateKey);
 
@@ -112,10 +114,6 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.getCause().printStackTrace();
-    }
-
-    private String generateSessionId() {
-        return String.valueOf(atomicLong.incrementAndGet());
     }
 
 }
