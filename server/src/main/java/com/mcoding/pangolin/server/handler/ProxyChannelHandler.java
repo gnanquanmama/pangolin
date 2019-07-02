@@ -71,4 +71,9 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
         super.channelWritabilityChanged(ctx);
     }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        log.error("EVENT=代理通道异常|CHANNEL={}|ERROR_MSG={}",ctx.channel(), cause.getMessage());
+    }
 }

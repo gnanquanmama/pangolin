@@ -82,7 +82,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        System.out.println("已建立通道类型： " + ChannelContextHolder.getAllChannelList());
+        log.info("已建立通道列表： " + ChannelContextHolder.getAllChannelList());
         Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
         if (Objects.isNull(userChannel)) {
             try{

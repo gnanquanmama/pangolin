@@ -13,6 +13,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
  * @author wzt on 2019/6/17.
  * @version 1.0
@@ -56,7 +58,12 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
-        log.warn("EVENT=用户通道掉线，关闭所有通道{}", ChannelContextHolder.getUserChannel(sessionId));
+        Channel userChannel = ChannelContextHolder.getUserChannel(sessionId);
+        if (Objects.isNull(userChannel)) {
+            log.warn("EVENT=用户通道掉线，关闭用户通道|DESC=已关闭通道|SESSION_ID={}", sessionId);
+        } else {
+            log.warn("EVENT=用户通道掉线，关闭用户通道{}", ChannelContextHolder.getUserChannel(sessionId));
+        }
 
         ChannelContextHolder.closeUserChannel(sessionId);
     }
@@ -69,7 +76,7 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        log.info("event=管道可写状态变化"+ ctx.channel().isWritable());
+        log.info("event=管道可写状态变化" + ctx.channel().isWritable());
         super.channelWritabilityChanged(ctx);
     }
 }

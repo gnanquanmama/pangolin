@@ -44,7 +44,7 @@ public class ClientMain {
         }
         String realServerPort = cmd.getOptionValue("real_server_port");
         if (StringUtil.isNullOrEmpty(realServerPort)) {
-            realServerPort = "9999";
+            realServerPort = "8083";
         }
         String privateKey = cmd.getOptionValue("private_key");
         if (StringUtil.isNullOrEmpty(privateKey)) {
