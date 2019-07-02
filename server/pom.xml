@@ -54,6 +54,7 @@
                 </executions>
             </plugin>
         </plugins>
+        <finalName>pangolin-server</finalName>
     </build>
 
 </project>

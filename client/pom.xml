@@ -47,6 +47,8 @@
                 </executions>
             </plugin>
         </plugins>
+
+        <finalName>pangolin-client</finalName>
     </build>
 
 </project>

@@ -8,6 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>client</artifactId>
   <build>
+    <finalName>pangolin-client</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>

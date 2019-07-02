@@ -40,11 +40,11 @@ public class ClientMain {
         }
         String realServerHost = cmd.getOptionValue("real_server_host");
         if (StringUtil.isNullOrEmpty(realServerHost)) {
-            realServerHost = "127.0.0.1";
+            realServerHost = "192.168.126.144";
         }
         String realServerPort = cmd.getOptionValue("real_server_port");
         if (StringUtil.isNullOrEmpty(realServerPort)) {
-            realServerPort = "8083";
+            realServerPort = "22";
         }
         String privateKey = cmd.getOptionValue("private_key");
         if (StringUtil.isNullOrEmpty(privateKey)) {

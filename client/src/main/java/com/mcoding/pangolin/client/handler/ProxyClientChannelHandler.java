@@ -13,7 +13,6 @@ import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author wzt on 2019/6/17.
@@ -97,14 +96,6 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         log.info("已建立通道列表： " + ChannelContextHolder.getAllChannelList());
         Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
-        if (Objects.isNull(userChannel)) {
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
     }
 
