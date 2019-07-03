@@ -94,7 +94,6 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        log.info("已建立通道列表： " + ChannelContextHolder.getAllChannelList());
         Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
     }

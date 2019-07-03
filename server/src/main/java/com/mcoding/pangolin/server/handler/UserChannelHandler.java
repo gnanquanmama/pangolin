@@ -43,8 +43,9 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 .setSessionId(sessionId)
                 .build();
 
-        proxyChannel.writeAndFlush(disconnectMsg);
-
+        if (Objects.nonNull(proxyChannel) && proxyChannel.isActive()) {
+            proxyChannel.writeAndFlush(disconnectMsg);
+        }
     }
 
     @Override
@@ -113,7 +114,8 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.getCause().printStackTrace();
+        log.error(cause.getMessage());
+        ctx.close();
     }
 
 }

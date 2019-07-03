@@ -12,7 +12,7 @@ import java.util.Objects;
 public class ServerMain {
 
     public static void main(String[] args) {
-        int defaultServerPort = 7979;
+        int defaultServerPort = 7500;
         if (Objects.nonNull(args) && args.length > 0) {
             defaultServerPort = Integer.valueOf(args[0]);
         }

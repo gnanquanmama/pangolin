@@ -35,9 +35,6 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
                 .setData(ByteString.copyFrom(content))
                 .setSessionId(sessionId)
                 .build();
-
-        log.info("EVENT=被代理服务返回信息|字节长度={}", content.length);
-
         Channel proxyChannel = ChannelContextHolder.getProxyChannel();
         proxyChannel.writeAndFlush(respMsg);
     }

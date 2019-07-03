@@ -7,9 +7,10 @@ import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.user.UserTable;
 import com.mcoding.pangolin.server.util.ChannelContextHolder;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Objects;
 
@@ -89,7 +90,6 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
     private void handleTransfer(PMessageOuterClass.PMessage msg) {
         Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
-        log.info("EVENT=传输数据监控|CHANNEL={}|LENGTH={}", userChannel, msg.getData().toByteArray().length);
     }
 
     @Override

@@ -36,7 +36,7 @@ public class ClientMain {
         }
         String proxyServerPort = cmd.getOptionValue("proxy_server_port");
         if (StringUtil.isNullOrEmpty(proxyServerPort)) {
-            proxyServerPort = "7979";
+            proxyServerPort = "7500";
         }
         String realServerHost = cmd.getOptionValue("real_server_host");
         if (StringUtil.isNullOrEmpty(realServerHost)) {
@@ -63,10 +63,10 @@ public class ClientMain {
 
     private static Options buildOption() {
         Options options = new Options();
-        options.addOption("proxy_server_host", true, "");
-        options.addOption("proxy_server_port", true, "");
-        options.addOption("real_server_host", true, "");
-        options.addOption("real_server_port", true, "");
+        options.addOption("p_host", true, "");
+        options.addOption("p_port", true, "");
+        options.addOption("r_host", true, "");
+        options.addOption("r_port", true, "");
         options.addOption("private_key", true, "");
 
         return options;
