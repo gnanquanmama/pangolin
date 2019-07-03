@@ -3,6 +3,8 @@ package com.mcoding.pangolin.server.util;
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -49,5 +51,12 @@ public class ChannelContextHolder {
         return userServerChannel.get(sessionId);
     }
 
+    public static Collection<Channel> getAllProxyServerChannel() {
+        return proxyServerChannel.values();
+    }
+
+    public static Collection<Channel> getAllUserServerChannel() {
+        return userServerChannel.values();
+    }
 
 }

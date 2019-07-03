@@ -7,8 +7,10 @@ package com.mcoding.pangolin.common;
 public class PangolinEngine {
 
 
-    public static void start(LifeCycle lifeCycle) {
-        lifeCycle.start();
+    public static void start(LifeCycle... lifeCycles) {
+        for (LifeCycle lifeCycle : lifeCycles) {
+            lifeCycle.start();
+        }
     }
 
 }
