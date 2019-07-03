@@ -22,4 +22,4 @@ private_key 客户端分配的私钥
 
 
 ### 管理接口
-查询所有在线通道信息 http://127.0.0.1:8050/channel/online/info
+查询所有在线通道信息 http://127.0.0.1:7060/channel/online/info

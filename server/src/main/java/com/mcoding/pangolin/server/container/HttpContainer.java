@@ -2,6 +2,7 @@ package com.mcoding.pangolin.server.container;
 
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.server.handler.HttpServerHandler;
+import com.mcoding.pangolin.server.util.PropertyUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpContainer implements LifeCycle {
 
-    private int webPort = 8050;
+    private static int webPort = PropertyUtils.getInt("web_port");
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
     private EventLoopGroup workerGroup = new NioEventLoopGroup();

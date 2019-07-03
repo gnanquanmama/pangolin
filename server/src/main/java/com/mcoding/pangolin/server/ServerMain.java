@@ -3,6 +3,7 @@ package com.mcoding.pangolin.server;
 import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.server.container.HttpContainer;
 import com.mcoding.pangolin.server.container.ProxyServerContainer;
+import com.mcoding.pangolin.server.util.PropertyUtils;
 
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
 public class ServerMain {
 
     public static void main(String[] args) {
-        int defaultServerPort = 7500;
+        int defaultServerPort = PropertyUtils.getInt("default_server_port");
         if (Objects.nonNull(args) && args.length > 0) {
             defaultServerPort = Integer.valueOf(args[0]);
         }
