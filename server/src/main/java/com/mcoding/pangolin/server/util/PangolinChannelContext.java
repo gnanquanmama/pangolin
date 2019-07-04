@@ -12,7 +12,7 @@ import java.util.Objects;
  * @author wzt on 2019/6/25.
  * @version 1.0
  */
-public class ChannelContextHolder {
+public class PangolinChannelContext {
 
     private static Map<String, Channel> proxyServerChannel = Maps.newConcurrentMap();
     private static Map<String, Channel> userServerChannel = Maps.newConcurrentMap();

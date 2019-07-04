@@ -4,7 +4,7 @@ import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.handler.ProxyChannelHandler;
 import com.mcoding.pangolin.server.handler.UserChannelHandler;
-import com.mcoding.pangolin.server.user.UserTable;
+import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -105,7 +105,7 @@ public class ProxyServerContainer implements LifeCycle {
                     }
                 });
 
-        UserTable.getUserToPortMap().forEach((userId, proxyPort) -> {
+        PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
             try {
                 ChannelFuture f = serverBootstrap.bind(proxyPort).sync();
                 f.addListener(future -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));

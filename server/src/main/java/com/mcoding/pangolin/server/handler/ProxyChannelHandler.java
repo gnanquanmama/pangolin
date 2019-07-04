@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.user.UserTable;
-import com.mcoding.pangolin.server.util.ChannelContextHolder;
+import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.util.PangolinChannelContext;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,7 +29,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-        ChannelContextHolder.closeProxyServerChannel(privateKey);
+        PangolinChannelContext.closeProxyServerChannel(privateKey);
         log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());
         ctx.close();
     }
@@ -56,11 +56,11 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         log.warn("EVENT=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", msg.getSessionId());
-        ChannelContextHolder.closeUserServerChannel(msg.getSessionId());
+        PangolinChannelContext.closeUserServerChannel(msg.getSessionId());
     }
 
     private void handleConnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
-        Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
+        Channel userChannel = PangolinChannelContext.getUserServerChannel(msg.getSessionId());
         userChannel.config().setAutoRead(true);
     }
 
@@ -73,7 +73,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
                 .setPrivateKey(privateKey)
                 .setData(ByteString.copyFrom(Constants.AUTH_SUCCESS.getBytes()));
 
-        Integer publicPort = UserTable.getUserToPortMap().get(privateKey);
+        Integer publicPort = PublicNetworkPortTable.getUserToPortMap().get(privateKey);
         if (Objects.isNull(publicPort)) {
             authMsgBuilder.setData(ByteString.copyFrom("私钥不存在，请在服务端配置后，再连接".getBytes()));
             ctx.writeAndFlush(authMsgBuilder.build());
@@ -83,12 +83,12 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
         ctx.writeAndFlush(authMsgBuilder.build());
         ctx.channel().attr(Constants.PRIVATE_KEY).set(privateKey);
-        ChannelContextHolder.addProxyServerChannel(privateKey, ctx.channel());
+        PangolinChannelContext.addProxyServerChannel(privateKey, ctx.channel());
         log.info("EVENT=连接认证处理|DESC=认证通过|PRIVATE_KEY={}", privateKey);
     }
 
     private void handleTransfer(PMessageOuterClass.PMessage msg) {
-        Channel userChannel = ChannelContextHolder.getUserServerChannel(msg.getSessionId());
+        Channel userChannel = PangolinChannelContext.getUserServerChannel(msg.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
     }
 

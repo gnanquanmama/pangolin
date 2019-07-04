@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.user.UserTable;
-import com.mcoding.pangolin.server.util.ChannelContextHolder;
+import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.util.PangolinChannelContext;
 import com.mcoding.pangolin.server.util.SessionIdProducer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author wzt on 2019/6/20.
@@ -32,11 +31,11 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
-        ChannelContextHolder.closeUserServerChannel(sessionId);
+        PangolinChannelContext.closeUserServerChannel(sessionId);
         ctx.close();
         log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
 
-        Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
+        Channel proxyChannel = PangolinChannelContext.getProxyServerChannel(privateKey);
 
         PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
                 .setType(MessageType.DISCONNECT)
@@ -60,7 +59,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 .setData(ByteString.copyFrom(data))
                 .build();
 
-        Channel proxyServerChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
+        Channel proxyServerChannel = PangolinChannelContext.getProxyServerChannel(privateKey);
         if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
             log.warn("EVENT=关闭代理服务代理管道{}", ctx.channel());
             ctx.close();
@@ -76,8 +75,8 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         InetSocketAddress localSocketAddress = (InetSocketAddress) ctx.channel().localAddress();
         int port = localSocketAddress.getPort();
 
-        String privateKey = UserTable.getUserToPortMap().inverse().get(port);
-        Channel proxyChannel = ChannelContextHolder.getProxyServerChannel(privateKey);
+        String privateKey = PublicNetworkPortTable.getUserToPortMap().inverse().get(port);
+        Channel proxyChannel = PangolinChannelContext.getProxyServerChannel(privateKey);
         if (proxyChannel == null) {
             log.warn("代理客户端通道还未建立");
             ctx.channel().close();
@@ -87,7 +86,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         if (!proxyChannel.isActive()) {
             System.out.println();
             log.warn("EVENT=关闭未激活代理客户端通道{}", ctx.channel());
-            ChannelContextHolder.closeProxyServerChannel(privateKey);
+            PangolinChannelContext.closeProxyServerChannel(privateKey);
             ctx.channel().close();
             return;
         }
@@ -109,7 +108,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
         proxyChannel.writeAndFlush(connectMsg);
 
-        ChannelContextHolder.addUserServerChannel(sessionId, userChannel);
+        PangolinChannelContext.addUserServerChannel(sessionId, userChannel);
     }
 
     @Override

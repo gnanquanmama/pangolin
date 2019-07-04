@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.util;
+package com.mcoding.pangolin.common.util;
 
 import java.io.InputStream;
 import java.util.Properties;

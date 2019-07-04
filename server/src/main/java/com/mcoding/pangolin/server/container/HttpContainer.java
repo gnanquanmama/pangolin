@@ -1,8 +1,8 @@
 package com.mcoding.pangolin.server.container;
 
 import com.mcoding.pangolin.common.LifeCycle;
+import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.handler.HttpServerHandler;
-import com.mcoding.pangolin.server.util.PropertyUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

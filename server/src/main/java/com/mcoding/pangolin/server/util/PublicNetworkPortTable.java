@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.user;
+package com.mcoding.pangolin.server.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -15,16 +15,13 @@ import java.util.List;
  * @version 1.0
  */
 @Slf4j
-public class UserTable {
+public class PublicNetworkPortTable {
 
     private static HashBiMap<String, Integer> userToPortMap = HashBiMap.create();
 
-
     static {
-        InputStream inputStream = UserTable.class.getResourceAsStream("/user.json");
-
         String userJson = "";
-        try {
+        try (InputStream inputStream = PublicNetworkPortTable.class.getResourceAsStream("/user.json")){
             userJson = IOUtils.toString(inputStream, "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
@@ -35,7 +32,6 @@ public class UserTable {
                 });
 
         log.info("EVENT=读取公网端口配置|CONTENT={}", JSON.toJSONString(publicPortConfigList));
-
 
         for (PublicPortConfig publicPortConfig : publicPortConfigList) {
             userToPortMap.put(publicPortConfig.getPrivateKey(), publicPortConfig.getPublicPort());

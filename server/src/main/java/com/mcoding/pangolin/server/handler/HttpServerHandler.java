@@ -1,8 +1,10 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import com.mcoding.pangolin.server.util.ChannelContextHolder;
+import com.mcoding.pangolin.server.util.PangolinChannelContext;
+import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,20 +23,27 @@ import java.util.stream.Collectors;
 public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private final static String ONLINE_CHANNEL_URI = "/channel/online/info";
+    private final static String INACTIVE_CLOSE_URI = "/channel/inactive/close";
+    private final static String PUBLIC_PORT_CONF = "/public/port/conf";
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest httpRequest) {
-        String responseJson = "404";
+        String responseContent = "";
         if (ONLINE_CHANNEL_URI.equalsIgnoreCase(httpRequest.uri())) {
-            responseJson = this.buildOnlineChannelInfo();
+            responseContent = this.buildOnlineChannelInfo();
+        } else if (INACTIVE_CLOSE_URI.equalsIgnoreCase(httpRequest.uri())) {
+            this.closeInactiveChannel();
+            responseContent = "close success";
+        } else if (PUBLIC_PORT_CONF.equalsIgnoreCase(httpRequest.uri())) {
+            responseContent = this.buildPublicNetworkPortConfig();
         } else {
-            responseJson = httpRequest.uri() + "不存在对于的服务";
+            responseContent = httpRequest.uri() + "不存在对于的服务";
         }
 
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(
                 HttpVersion.HTTP_1_1,
                 HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(responseJson.getBytes()));
+                Unpooled.wrappedBuffer(responseContent.getBytes()));
 
         HttpHeaders heads = response.headers();
         heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN + "; charset=UTF-8");
@@ -44,18 +53,42 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         ctx.writeAndFlush(response);
     }
 
+
+    /**
+     * 构建公网端口配置
+     *
+     * @return
+     */
+    private String buildPublicNetworkPortConfig() {
+        HashBiMap<String, Integer> map = PublicNetworkPortTable.getUserToPortMap();
+        return JSON.toJSONString(map);
+    }
+
+    /**
+     * 关闭已不活动的通道
+     */
+    private void closeInactiveChannel() {
+        PangolinChannelContext.getAllUserServerChannel().stream()
+                .filter(channel -> !channel.isActive())
+                .forEach(Channel::close);
+
+        PangolinChannelContext.getAllProxyServerChannel().stream()
+                .filter(channel -> !channel.isActive())
+                .forEach(Channel::close);
+    }
+
     /**
      * 构建在线通道信息
      *
      * @return
      */
     private String buildOnlineChannelInfo() {
-        String allProxyServerChannel = ChannelContextHolder.getAllProxyServerChannel()
+        String allProxyServerChannel = PangolinChannelContext.getAllProxyServerChannel()
                 .stream()
                 .map(Channel::toString)
                 .collect(Collectors.joining(","));
 
-        String allUserServerChannel = ChannelContextHolder.getAllUserServerChannel()
+        String allUserServerChannel = PangolinChannelContext.getAllUserServerChannel()
                 .stream()
                 .map(Channel::toString)
                 .collect(Collectors.joining(","));
