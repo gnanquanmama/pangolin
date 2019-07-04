@@ -44,9 +44,8 @@ public class HttpContainer implements LifeCycle {
                     }
                 });
 
-        bootstrap.bind(webPort).addListener(channelFutureListener ->
-                log.info("EVENT=开启HTTP服务|端口={}", webPort)
-        );
+        bootstrap.bind(webPort)
+                .addListener(listener -> log.info("EVENT=开启HTTP服务|端口={}", webPort));
     }
 
 

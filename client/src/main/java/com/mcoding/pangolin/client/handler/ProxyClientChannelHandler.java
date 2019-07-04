@@ -109,24 +109,23 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
         String realServerHost = proxyInfo.getRealServerHost();
         Integer realServerPort = proxyInfo.getRealServerPort();
 
-        ChannelFuture futureChannel = this.realServerBootstrap
-                .connect(realServerHost, realServerPort);
-        futureChannel.addListener((ChannelFuture future) -> {
-            if (future.isSuccess()) {
-                log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
-                future.channel().attr(Constants.SESSION_ID).set(sessionId);
-                PangolinChannelContext.addUserChannel(sessionId, futureChannel.channel());
+        realServerBootstrap
+                .connect(realServerHost, realServerPort)
+                .addListener((ChannelFuture future) -> {
+                    if (!future.isSuccess()) {
+                        log.error("EVENT=连接被代理服务器失败");
+                        return;
+                    }
 
-                PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                        .setSessionId(sessionId)
-                        .setType(MessageType.CONNECT)
-                        .build();
+                    log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
+                    future.channel().attr(Constants.SESSION_ID).set(sessionId);
+                    PangolinChannelContext.addUserChannel(sessionId, future.channel());
 
-                ctx.channel().writeAndFlush(confirmConnectMsg);
-            } else {
-                log.error("EVENT=连接被代理服务器失败");
-            }
-        });
+                    PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                            .setSessionId(sessionId).setType(MessageType.CONNECT).build();
+
+                    ctx.channel().writeAndFlush(confirmConnectMsg);
+                });
     }
 
 }

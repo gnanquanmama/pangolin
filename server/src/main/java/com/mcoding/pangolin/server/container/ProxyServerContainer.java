@@ -68,12 +68,8 @@ public class ProxyServerContainer implements LifeCycle {
                     }
                 });
 
-        try {
-            ChannelFuture f = serverBootstrap.bind(serverPort).sync();
-            f.addListener(channelFutureListener -> log.info("EVENT=开启基础管道服务端口[{}]", serverPort));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        serverBootstrap.bind(serverPort)
+                .addListener(__ -> log.info("EVENT=开启基础管道服务端口[{}]", serverPort));
     }
 
 
@@ -98,7 +94,7 @@ public class ProxyServerContainer implements LifeCycle {
 
         PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
             serverBootstrap.bind(proxyPort)
-                    .addListener(future -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
+                    .addListener(__ -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
         });
 
     }
