@@ -30,23 +30,23 @@ public class ClientMain {
         Options argOptions = buildOption();
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(argOptions, args);
-        String proxyServerHost = cmd.getOptionValue("proxy_server_host");
+        String proxyServerHost = cmd.getOptionValue("p_host");
         if (StringUtil.isNullOrEmpty(proxyServerHost)) {
             proxyServerHost = "127.0.0.1";
         }
-        String proxyServerPort = cmd.getOptionValue("proxy_server_port");
+        String proxyServerPort = cmd.getOptionValue("p_port");
         if (StringUtil.isNullOrEmpty(proxyServerPort)) {
             proxyServerPort = "7500";
         }
-        String realServerHost = cmd.getOptionValue("real_server_host");
+        String realServerHost = cmd.getOptionValue("r_host");
         if (StringUtil.isNullOrEmpty(realServerHost)) {
             realServerHost = "192.168.126.144";
         }
-        String realServerPort = cmd.getOptionValue("real_server_port");
+        String realServerPort = cmd.getOptionValue("r_port");
         if (StringUtil.isNullOrEmpty(realServerPort)) {
             realServerPort = "22";
         }
-        String privateKey = cmd.getOptionValue("private_key");
+        String privateKey = cmd.getOptionValue("p_key");
         if (StringUtil.isNullOrEmpty(privateKey)) {
             privateKey = "qaz123";
         }
@@ -67,7 +67,7 @@ public class ClientMain {
         options.addOption("p_port", true, "");
         options.addOption("r_host", true, "");
         options.addOption("r_port", true, "");
-        options.addOption("private_key", true, "");
+        options.addOption("p_key", true, "");
 
         return options;
     }

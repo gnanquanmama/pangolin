@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
     private ProxyInfo proxyInfo;
-    private Bootstrap proxyServerBootstrap;
-    private Bootstrap realServerBootstrap;
+    private Bootstrap proxyClientBootstrap;
+    private Bootstrap realClientBootstrap;
 
     public ClientContainer(ProxyInfo proxyInfo) {
         this.proxyInfo = proxyInfo;
@@ -49,24 +49,22 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
     }
 
     private void init() {
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-
-        realServerBootstrap = new Bootstrap();
-        realServerBootstrap.group(workerGroup);
-        realServerBootstrap.channel(NioSocketChannel.class);
-        realServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        realServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        realClientBootstrap = new Bootstrap();
+        realClientBootstrap.group(new NioEventLoopGroup());
+        realClientBootstrap.channel(NioSocketChannel.class);
+        realClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        realClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new RealServerConnectionHandler());
             }
         });
 
-        proxyServerBootstrap = new Bootstrap();
-        proxyServerBootstrap.group(workerGroup);
-        proxyServerBootstrap.channel(NioSocketChannel.class);
-        proxyServerBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        proxyServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        proxyClientBootstrap = new Bootstrap();
+        proxyClientBootstrap.group(new NioEventLoopGroup());
+        proxyClientBootstrap.channel(NioSocketChannel.class);
+        proxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        proxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
@@ -75,7 +73,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                 pipeline.addLast(new ProtobufEncoder());
 
-                pipeline.addLast(new ProxyClientChannelHandler(proxyInfo, realServerBootstrap, ClientContainer.this));
+                pipeline.addLast(new ProxyClientChannelHandler(proxyInfo, realClientBootstrap, ClientContainer.this));
             }
         });
 
@@ -86,7 +84,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         String proxyServerHost = proxyInfo.getProxyServerHost();
         int proxyPort = proxyInfo.getProxyServerPort();
 
-        ChannelFuture channelFuture = proxyServerBootstrap.connect(proxyServerHost, proxyPort).sync();
+        ChannelFuture channelFuture = proxyClientBootstrap.connect(proxyServerHost, proxyPort).sync();
 
         channelFuture.addListener(new ChannelFutureListener() {
             @Override

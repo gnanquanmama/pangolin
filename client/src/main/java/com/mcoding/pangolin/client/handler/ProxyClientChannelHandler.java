@@ -3,7 +3,7 @@ package com.mcoding.pangolin.client.handler;
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
-import com.mcoding.pangolin.client.util.ChannelContextHolder;
+import com.mcoding.pangolin.client.util.PangolinChannelContext;
 import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
@@ -64,9 +64,9 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.warn("EVENT=代理通道掉线，关闭所有通道{}", ChannelContextHolder.getAllChannelList());
+        log.warn("EVENT=代理通道掉线，关闭所有通道{}", PangolinChannelContext.getAllChannelList());
 
-        ChannelContextHolder.closeAll();
+        PangolinChannelContext.closeAll();
         this.clientContainer.channelInActive(ctx);
     }
 
@@ -79,7 +79,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         ByteString data = message.getData();
         if (Constants.AUTH_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
-            ChannelContextHolder.addProxyChannel(ctx.channel());
+            PangolinChannelContext.addProxyChannel(ctx.channel());
             log.info("EVENT=认证成功");
         } else {
             log.error("EVENT=认证异常|DESC={}", data.toStringUtf8());
@@ -89,18 +89,18 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
-        ChannelContextHolder.closeUserChannel(sessionId);
+        PangolinChannelContext.closeUserChannel(sessionId);
         log.info("EVENT=公网访问连接断开，关闭被代理服务器通道");
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        Channel userChannel = ChannelContextHolder.getUserChannel(message.getSessionId());
+        Channel userChannel = PangolinChannelContext.getUserChannel(message.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
     }
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
-        Channel userChannel = ChannelContextHolder.getUserChannel(sessionId);
+        Channel userChannel = PangolinChannelContext.getUserChannel(sessionId);
         if (Objects.nonNull(userChannel)) {
             log.info("EVENT=连接被代理服务|DESC=通道已连接，不需要重新连接");
             return;
@@ -117,7 +117,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
                 if (future.isSuccess()) {
                     log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
                     future.channel().attr(Constants.SESSION_ID).set(sessionId);
-                    ChannelContextHolder.addUserChannel(sessionId, futureChannel.channel());
+                    PangolinChannelContext.addUserChannel(sessionId, futureChannel.channel());
 
                     PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
                             .setSessionId(sessionId)
