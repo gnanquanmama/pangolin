@@ -65,9 +65,9 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
         PangolinChannelContext.closeUserChannel(sessionId);
 
         PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setSessionId(sessionId)
-                .setType(MessageType.DISCONNECT)
+                .setSessionId(sessionId).setType(MessageType.DISCONNECT)
                 .build();
+
         PangolinChannelContext.getProxyChannel().writeAndFlush(disconnectMsg);
 
         log.info("EVENT=关闭公网服务连接通道|SESSION_ID={}", sessionId);
