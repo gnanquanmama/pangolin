@@ -86,14 +86,11 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
         ChannelFuture channelFuture = proxyClientBootstrap.connect(proxyServerHost, proxyPort).sync();
 
-        channelFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    log.info("EVENT=连接代理服务器|HOST={}|PORT={}|CHANNEL={}", proxyServerHost, proxyPort, future.channel());
-                } else {
-                    connectProxyServer();
-                }
+        channelFuture.addListener((ChannelFuture future) -> {
+            if (future.isSuccess()) {
+                log.info("EVENT=连接代理服务器|HOST={}|PORT={}|CHANNEL={}", proxyServerHost, proxyPort, future.channel());
+            } else {
+                connectProxyServer();
             }
         });
 

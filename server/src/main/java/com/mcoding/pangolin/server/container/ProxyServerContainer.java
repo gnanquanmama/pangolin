@@ -55,34 +55,25 @@ public class ProxyServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 1024))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-
                         pipeline.addLast(new ProtobufVarint32FrameDecoder());
                         pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                         pipeline.addLast(new ProtobufEncoder());
-
                         pipeline.addLast(new ProxyChannelHandler());
                     }
-                })
-                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, Integer.MAX_VALUE));
+                });
 
         try {
             ChannelFuture f = serverBootstrap.bind(serverPort).sync();
-            f.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    log.info("EVENT=开启基础管道服务端口[{}]", serverPort);
-                }
-            });
+            f.addListener(channelFutureListener -> log.info("EVENT=开启基础管道服务端口[{}]", serverPort));
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -106,12 +97,8 @@ public class ProxyServerContainer implements LifeCycle {
                 });
 
         PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
-            try {
-                ChannelFuture f = serverBootstrap.bind(proxyPort).sync();
-                f.addListener(future -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            serverBootstrap.bind(proxyPort)
+                    .addListener(future -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
         });
 
     }

@@ -111,23 +111,20 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
 
         ChannelFuture futureChannel = this.realServerBootstrap
                 .connect(realServerHost, realServerPort);
-        futureChannel.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
-                    future.channel().attr(Constants.SESSION_ID).set(sessionId);
-                    PangolinChannelContext.addUserChannel(sessionId, futureChannel.channel());
+        futureChannel.addListener((ChannelFuture future) -> {
+            if (future.isSuccess()) {
+                log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
+                future.channel().attr(Constants.SESSION_ID).set(sessionId);
+                PangolinChannelContext.addUserChannel(sessionId, futureChannel.channel());
 
-                    PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                            .setSessionId(sessionId)
-                            .setType(MessageType.CONNECT)
-                            .build();
+                PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                        .setSessionId(sessionId)
+                        .setType(MessageType.CONNECT)
+                        .build();
 
-                    ctx.channel().writeAndFlush(confirmConnectMsg);
-                } else {
-                    log.info("event=连接被代理服务器失败");
-                }
+                ctx.channel().writeAndFlush(confirmConnectMsg);
+            } else {
+                log.error("EVENT=连接被代理服务器失败");
             }
         });
     }
