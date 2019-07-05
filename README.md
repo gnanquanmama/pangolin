@@ -22,7 +22,7 @@
     p_key 客户端分配的私钥
 
 
-#### Management Rest Api  
+#### Management Restful Api  
     查询所有在线通道信息  
     - http://127.0.0.1:7060/channel/online/info  
 
