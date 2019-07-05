@@ -1,9 +1,17 @@
 # Pangolin
 内网穿透工具 基于Java8,netty4.x实现
 
-#### How to user
+#### How to use
 
     1. 配置server模块下的user.json文件,配置公网访问端口,对应的私钥privateKey
+    ```
+        [
+            {
+                "privateKey": "qaz123",
+                "publicPort": 9797
+            }
+        ]
+    ```
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
     4. java -jar pangolin_client.jar -p_host `xxxx` -p_port 7500 -r_host `yyyy` -r_port `iiii` -p_key `zzzz`
