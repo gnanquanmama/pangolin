@@ -18,10 +18,10 @@
 
 #### 管理接口  
     查询所有在线通道信息  
-    http://127.0.0.1:7060/channel/online/info  
+    - http://127.0.0.1:7060/channel/online/info  
 
     查询公网端口配置信息  
-    http://127.0.0.1:7060/public/port/conf  
+    - http://127.0.0.1:7060/public/port/conf  
 
     关闭已失活的通道  
-    http://127.0.0.1:7060/channel/inactive/close
+    - http://127.0.0.1:7060/channel/inactive/close
