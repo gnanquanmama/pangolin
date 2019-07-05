@@ -6,7 +6,7 @@
     1. 配置server模块下的user.json文件,配置公网访问端口,对应的私钥privateKey
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
-    4. java -jar pangolin_client.jar -p_host * xxxx -p_port 7500 -r_host yyyy -r_port iiii -p_key zzzz
+    4. java -jar pangolin_client.jar -p_host `xxxx` -p_port 7500 -r_host `yyyy` -r_port `iiii` -p_key `zzzz`
 
 #### 参数说明  
     p_host 代理服务器主机名称  
