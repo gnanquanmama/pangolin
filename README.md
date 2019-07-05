@@ -12,7 +12,7 @@
         ]
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
-    4. java -jar pangolin_client.jar -p_host `xxxx` -p_port 7500 -r_host `yyyy` -r_port `iiii` -p_key `zzzz`
+    4. java -jar pangolin_client.jar -p_host [xxxx] -p_port 7500 -r_host [yyyy] -r_port [zzzz] -p_key qaz123
 
 #### Argument Description  
     p_host 代理服务器主机名称  
