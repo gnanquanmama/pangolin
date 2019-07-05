@@ -1,5 +1,5 @@
 # Pangolin
-内网穿透工具 基于JDK8,netty4.x实现
+内网穿透工具 基于Java8,netty4.x实现
 
 #### How to user
 
