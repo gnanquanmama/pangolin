@@ -23,4 +23,9 @@ public class UrlToFuncConfig {
     public static Map<String, Function<Void, String>> getUrlToFunc() {
         return urlToFunc;
     }
+
+    public static Function<Void, String> getFunction(String relativeUrl) {
+        return urlToFunc.get(relativeUrl);
+    }
+
 }
