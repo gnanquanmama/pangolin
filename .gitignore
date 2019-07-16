@@ -1,2 +1,10 @@
 .idea/
-/api/target/
+
+/common/target/
+/protocol/target/
+
+/client/target/
+/client/dependency-reduced-pom.xml
+
+/server/target/
+/server/dependency-reduced-pom.xml
