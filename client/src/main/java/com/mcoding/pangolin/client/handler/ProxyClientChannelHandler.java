@@ -79,8 +79,11 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         ByteString data = message.getData();
         if (Constants.AUTH_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
+            ctx.channel().attr(Constants.SESSION_ID).set(message.getSessionId());
+            ctx.channel().attr(Constants.PRIVATE_KEY).set(message.getPrivateKey());
             PangolinChannelContext.addProxyChannel(ctx.channel());
             log.info("EVENT=认证成功");
+
         } else {
             log.error("EVENT=认证异常|DESC={}", data.toStringUtf8());
             System.exit(0);

@@ -10,5 +10,6 @@ public interface MessageType {
     byte CONNECT = 2;
     byte TRANSFER = 3;
     byte DISCONNECT = 4;
+    byte HEART_BEAT = 5;
 
 }

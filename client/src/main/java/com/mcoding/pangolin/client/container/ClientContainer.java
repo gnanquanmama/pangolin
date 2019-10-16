@@ -1,6 +1,7 @@
 package com.mcoding.pangolin.client.container;
 
 import com.mcoding.pangolin.client.entity.ProxyInfo;
+import com.mcoding.pangolin.client.handler.HeartBeatHandler;
 import com.mcoding.pangolin.client.handler.ProxyClientChannelHandler;
 import com.mcoding.pangolin.client.handler.RealServerConnectionHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
@@ -15,6 +16,7 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -68,6 +70,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
             @Override
             public void initChannel(SocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(new HeartBeatHandler(0, 60, 0, TimeUnit.MINUTES));
                 pipeline.addLast(new ProtobufVarint32FrameDecoder());
                 pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());

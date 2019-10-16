@@ -49,9 +49,16 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
             case MessageType.DISCONNECT:
                 handleDisconnect(ctx, msg);
                 break;
+            case MessageType.HEART_BEAT:
+                handleHeartBeat(ctx, msg);
+                break;
             default:
                 break;
         }
+    }
+
+    private void handleHeartBeat(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
+        log.info("EVENT=收到心跳包|MSG={}", msg.getData().toStringUtf8());
     }
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {

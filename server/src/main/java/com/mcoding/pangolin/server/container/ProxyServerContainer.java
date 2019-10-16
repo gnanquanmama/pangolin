@@ -3,6 +3,7 @@ package com.mcoding.pangolin.server.container;
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.handler.ProxyChannelHandler;
+import com.mcoding.pangolin.server.handler.ServerIdleStateHandler;
 import com.mcoding.pangolin.server.handler.UserChannelHandler;
 import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
 import io.netty.bootstrap.ServerBootstrap;
@@ -60,6 +61,7 @@ public class ProxyServerContainer implements LifeCycle {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new ServerIdleStateHandler());
                         pipeline.addLast(new ProtobufVarint32FrameDecoder());
                         pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
@@ -88,6 +90,7 @@ public class ProxyServerContainer implements LifeCycle {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new ServerIdleStateHandler());
                         pipeline.addLast(new UserChannelHandler());
                     }
                 });
