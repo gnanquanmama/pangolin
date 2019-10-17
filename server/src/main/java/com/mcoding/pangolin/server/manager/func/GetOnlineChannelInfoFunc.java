@@ -17,12 +17,12 @@ public class GetOnlineChannelInfoFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        String allProxyServerChannel = PangolinChannelContext.getAllProxyServerChannel()
+        String allProxyServerChannel = PangolinChannelContext.getAllIntranetProxyChannel()
                 .stream()
                 .map(Channel::toString)
                 .collect(Collectors.joining(","));
 
-        String allUserServerChannel = PangolinChannelContext.getAllUserServerChannel()
+        String allUserServerChannel = PangolinChannelContext.getAllPublicNetworkChannel()
                 .stream()
                 .map(Channel::toString)
                 .collect(Collectors.joining(","));

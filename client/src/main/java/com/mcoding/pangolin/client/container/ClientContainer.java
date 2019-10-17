@@ -2,8 +2,8 @@ package com.mcoding.pangolin.client.container;
 
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.handler.HeartBeatHandler;
-import com.mcoding.pangolin.client.handler.ProxyClientChannelHandler;
-import com.mcoding.pangolin.client.handler.RealServerConnectionHandler;
+import com.mcoding.pangolin.client.handler.IntranetProxyChannelHandler;
+import com.mcoding.pangolin.client.handler.TargetServerChannelHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
@@ -16,7 +16,6 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -29,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
     private ProxyInfo proxyInfo;
-    private Bootstrap proxyClientBootstrap;
-    private Bootstrap realClientBootstrap;
+    private Bootstrap intranetProxyClientBootstrap;
+    private Bootstrap targetServerClientBootstrap;
 
     public ClientContainer(ProxyInfo proxyInfo) {
         this.proxyInfo = proxyInfo;
@@ -40,7 +39,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
     @Override
     public void start() {
         try {
-            this.connectProxyServer();
+            this.connectIntranetProxyServer();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -51,22 +50,22 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
     }
 
     private void init() {
-        realClientBootstrap = new Bootstrap();
-        realClientBootstrap.group(new NioEventLoopGroup());
-        realClientBootstrap.channel(NioSocketChannel.class);
-        realClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        realClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        targetServerClientBootstrap = new Bootstrap();
+        targetServerClientBootstrap.group(new NioEventLoopGroup());
+        targetServerClientBootstrap.channel(NioSocketChannel.class);
+        targetServerClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        targetServerClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(new RealServerConnectionHandler());
+                ch.pipeline().addLast(new TargetServerChannelHandler());
             }
         });
 
-        proxyClientBootstrap = new Bootstrap();
-        proxyClientBootstrap.group(new NioEventLoopGroup());
-        proxyClientBootstrap.channel(NioSocketChannel.class);
-        proxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        proxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        intranetProxyClientBootstrap = new Bootstrap();
+        intranetProxyClientBootstrap.group(new NioEventLoopGroup());
+        intranetProxyClientBootstrap.channel(NioSocketChannel.class);
+        intranetProxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        intranetProxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
@@ -76,23 +75,28 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                 pipeline.addLast(new ProtobufEncoder());
 
-                pipeline.addLast(new ProxyClientChannelHandler(proxyInfo, realClientBootstrap, ClientContainer.this));
+                pipeline.addLast(new IntranetProxyChannelHandler(proxyInfo, targetServerClientBootstrap, ClientContainer.this));
             }
         });
 
     }
 
-    private void connectProxyServer() throws Exception {
+    /**
+     * 连接内网代理服务器
+     *
+     * @throws Exception
+     */
+    private void connectIntranetProxyServer() throws Exception {
         String proxyServerHost = proxyInfo.getProxyServerHost();
         int proxyPort = proxyInfo.getProxyServerPort();
 
-        ChannelFuture channelFuture = proxyClientBootstrap.connect(proxyServerHost, proxyPort).sync();
+        ChannelFuture channelFuture = intranetProxyClientBootstrap.connect(proxyServerHost, proxyPort).sync();
         channelFuture.addListener((ChannelFuture future) -> {
             if (future.isSuccess()) {
                 log.info("EVENT=连接代理服务器|HOST={}|PORT={}|CHANNEL={}", proxyServerHost, proxyPort, future.channel());
             } else {
                 TimeUnit.SECONDS.sleep(5);
-                connectProxyServer();
+                connectIntranetProxyServer();
             }
         });
     }

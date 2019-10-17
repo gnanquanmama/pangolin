@@ -3,6 +3,8 @@ package com.mcoding.pangolin.server.util;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * SessionId 生成器
+ *
  * @author wzt on 2019/7/2.
  * @version 1.0
  */

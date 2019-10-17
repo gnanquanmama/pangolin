@@ -15,7 +15,7 @@ import java.util.function.Function;
  * @version 1.0
  */
 @Slf4j
-public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class ChannelManagerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
 
     @Override

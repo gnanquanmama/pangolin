@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.protocol.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
 import com.mcoding.pangolin.server.util.PangolinChannelContext;
+import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,11 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Objects;
 
 /**
+ * 内网代理通道处理器
+ *
  * @author wzt on 2019/6/20.
  * @version 1.0
  */
 @Slf4j
-public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
+public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -29,7 +31,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-        PangolinChannelContext.closeProxyServerChannel(privateKey);
+        PangolinChannelContext.unBindIntranetProxyChannel(privateKey);
         log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());
         ctx.close();
     }
@@ -63,11 +65,11 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         log.warn("EVENT=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", msg.getSessionId());
-        PangolinChannelContext.closeUserServerChannel(msg.getSessionId());
+        PangolinChannelContext.unBindPublicNetworkChannel(msg.getSessionId());
     }
 
     private void handleConnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
-        Channel userChannel = PangolinChannelContext.getUserServerChannel(msg.getSessionId());
+        Channel userChannel = PangolinChannelContext.getPublicNetworkChannel(msg.getSessionId());
         userChannel.config().setAutoRead(true);
     }
 
@@ -95,7 +97,7 @@ public class ProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOut
     }
 
     private void handleTransfer(PMessageOuterClass.PMessage msg) {
-        Channel userChannel = PangolinChannelContext.getUserServerChannel(msg.getSessionId());
+        Channel userChannel = PangolinChannelContext.getPublicNetworkChannel(msg.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
     }
 

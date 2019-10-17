@@ -13,11 +13,11 @@ public class CloseInactiveChannelFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        PangolinChannelContext.getAllUserServerChannel().stream()
+        PangolinChannelContext.getAllPublicNetworkChannel().stream()
                 .filter(channel -> !channel.isActive())
                 .forEach(Channel::close);
 
-        PangolinChannelContext.getAllProxyServerChannel().stream()
+        PangolinChannelContext.getAllIntranetProxyChannel().stream()
                 .filter(channel -> !channel.isActive())
                 .forEach(Channel::close);
 

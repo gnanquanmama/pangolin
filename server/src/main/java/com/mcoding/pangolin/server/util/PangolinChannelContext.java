@@ -1,6 +1,5 @@
 package com.mcoding.pangolin.server.util;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 
@@ -9,56 +8,68 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * 通道管理上下文
+ *
  * @author wzt on 2019/6/25.
  * @version 1.0
  */
 public class PangolinChannelContext {
 
-    private static Map<String, Channel> proxyServerChannel = Maps.newConcurrentMap();
-    private static Map<String, Channel> userServerChannel = Maps.newConcurrentMap();
+    private static Map<String, Channel> intranetProxyChannelMap = Maps.newConcurrentMap();
+    private static Map<String, Channel> publicNetworkChannelMap = Maps.newConcurrentMap();
 
 
     public static void addProxyServerChannel(String privateKey, Channel channel) {
-        proxyServerChannel.put(privateKey, channel);
+        intranetProxyChannelMap.put(privateKey, channel);
     }
 
-    public static void addUserServerChannel(String sessionId, Channel channel) {
-        userServerChannel.put(sessionId, channel);
+    /**
+     * 绑定公网通道
+     *
+     * @param sessionId
+     * @param channel
+     */
+    public static void bindPublicNetworkChannel(String sessionId, Channel channel) {
+        publicNetworkChannelMap.put(sessionId, channel);
     }
 
-    public static void closeProxyServerChannel(String privateKey) {
-        Channel channel = proxyServerChannel.get(privateKey);
+    public static void unBindIntranetProxyChannel(String privateKey) {
+        Channel channel = intranetProxyChannelMap.get(privateKey);
         if (Objects.nonNull(channel)) {
             channel.close();
-            proxyServerChannel.remove(privateKey);
+            intranetProxyChannelMap.remove(privateKey);
         }
     }
 
-    public static void closeUserServerChannel(String sessionId) {
-        System.out.println(sessionId);
-        Channel channel = userServerChannel.get(sessionId);
+    public static void unBindPublicNetworkChannel(String sessionId) {
+        Channel channel = publicNetworkChannelMap.get(sessionId);
         if (Objects.nonNull(channel)) {
             channel.close();
-            userServerChannel.remove(sessionId);
+            publicNetworkChannelMap.remove(sessionId);
         }
     }
 
-    public static Channel getProxyServerChannel(String privateKey) {
-        return proxyServerChannel.get(privateKey);
+    /**
+     * 获取内网代理通道
+     *
+     * @param privateKey
+     * @return
+     */
+    public static Channel getIntranetProxyServerChannel(String privateKey) {
+        return intranetProxyChannelMap.get(privateKey);
     }
 
-    public static Channel getUserServerChannel(String sessionId) {
-        return userServerChannel.get(sessionId);
+    public static Channel getPublicNetworkChannel(String sessionId) {
+        return publicNetworkChannelMap.get(sessionId);
     }
 
-    public static Collection<Channel> getAllProxyServerChannel() {
-        return proxyServerChannel.values();
+    public static Collection<Channel> getAllIntranetProxyChannel() {
+        return intranetProxyChannelMap.values();
     }
 
-    public static Collection<Channel> getAllUserServerChannel() {
-        return userServerChannel.values();
+    public static Collection<Channel> getAllPublicNetworkChannel() {
+        return publicNetworkChannelMap.values();
     }
-
 
 
 }

@@ -31,7 +31,7 @@ public class PublicNetworkPortTable {
                 new TypeReference<List<PublicPortConfig>>() {
                 });
 
-        log.info("EVENT=读取公网端口配置|CONTENT={}", JSON.toJSONString(publicPortConfigList));
+        log.info("EVENT=READ公网端口配置|CONTENT={}", JSON.toJSONString(publicPortConfigList));
 
         for (PublicPortConfig publicPortConfig : publicPortConfigList) {
             userToPortMap.put(publicPortConfig.getPrivateKey(), publicPortConfig.getPublicPort());

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 服务空闲检测器
+ *
  * @author wzt on 2019/10/16.
  * @version 1.0
  */
