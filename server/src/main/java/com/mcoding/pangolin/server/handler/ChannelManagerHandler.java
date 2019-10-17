@@ -23,6 +23,7 @@ public class ChannelManagerHandler extends SimpleChannelInboundHandler<FullHttpR
         String responseContent = "";
 
         String relativeUrl = httpRequest.uri();
+
         Function<Void, String> handlerFunc = UrlToFuncConfig.getFunction(relativeUrl);
         if (Objects.isNull(handlerFunc)) {
             responseContent = relativeUrl + "不存在对应的服务";

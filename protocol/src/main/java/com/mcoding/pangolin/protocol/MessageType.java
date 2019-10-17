@@ -11,5 +11,6 @@ public interface MessageType {
     byte TRANSFER = 3;
     byte DISCONNECT = 4;
     byte HEART_BEAT = 5;
+    byte CHAIN_TRACE = 6;
 
 }

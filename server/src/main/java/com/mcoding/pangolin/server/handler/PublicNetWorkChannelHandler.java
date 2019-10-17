@@ -1,11 +1,12 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.google.protobuf.ByteString;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.util.PangolinChannelContext;
 import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.util.RequestChainTraceTable;
 import com.mcoding.pangolin.server.util.SessionIdProducer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -102,14 +103,17 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
 
         Channel proxyChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
 
-        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setType(MessageType.DISCONNECT)
-                .setSessionId(sessionId)
-                .build();
 
         if (Objects.nonNull(proxyChannel) && proxyChannel.isActive()) {
+            PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                    .setType(MessageType.DISCONNECT)
+                    .setSessionId(sessionId)
+                    .build();
             proxyChannel.writeAndFlush(disconnectMsg);
         }
+
+        // 清楚请求链路信息
+        RequestChainTraceTable.remove(sessionId);
     }
 
     @Override

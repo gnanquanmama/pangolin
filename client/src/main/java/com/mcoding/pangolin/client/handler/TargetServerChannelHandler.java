@@ -1,8 +1,12 @@
 package com.mcoding.pangolin.client.handler;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.util.PangolinChannelContext;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.util.ChannelAddressUtils;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.buffer.ByteBuf;
@@ -13,6 +17,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,10 +34,25 @@ public class TargetServerChannelHandler extends SimpleChannelInboundHandler<Byte
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        log.info("EVENT=激活被代理通道");
+        log.info("EVENT=激活目标服务通道");
 
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         PangolinChannelContext.bindTargetServerChannel(sessionId, ctx.channel());
+
+        AddressInfo targetServerChannelAddressInfo = ChannelAddressUtils.buildAddressInfo(ctx.channel());
+
+        Channel intranetProxyChannel = PangolinChannelContext.getIntranetProxyChannel();
+        AddressInfo intranetProxyChannelAddressInfo = ChannelAddressUtils.buildAddressInfo(intranetProxyChannel);
+
+        List<AddressInfo> addressInfoList = Lists.newArrayList(targetServerChannelAddressInfo, intranetProxyChannelAddressInfo);
+
+        PMessageOuterClass.PMessage chainTraceMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.CHAIN_TRACE)
+                .setData(ByteString.copyFrom(JSON.toJSONString(addressInfoList), Charset.defaultCharset()))
+                .setSessionId(sessionId)
+                .build();
+        intranetProxyChannel.writeAndFlush(chainTraceMsg);
+
     }
 
     @Override

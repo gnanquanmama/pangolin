@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.util.PangolinChannelContext;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;

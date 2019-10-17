@@ -2,9 +2,12 @@ package com.mcoding.pangolin.server.manager.func;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.util.ChannelAddressUtils;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.server.util.PangolinChannelContext;
-import io.netty.channel.Channel;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,19 +20,28 @@ public class GetOnlineChannelInfoFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        String allProxyServerChannel = PangolinChannelContext.getAllIntranetProxyChannel()
-                .stream()
-                .map(Channel::toString)
-                .collect(Collectors.joining(","));
 
-        String allUserServerChannel = PangolinChannelContext.getAllPublicNetworkChannel()
+        List<AddressInfo> allPublicNetworkAddressInfoList = PangolinChannelContext.getAllPublicNetworkChannel()
                 .stream()
-                .map(Channel::toString)
-                .collect(Collectors.joining(","));
+                .map(ChannelAddressUtils::buildAddressInfo)
+                .collect(Collectors.toList());
 
-        Map<String, String> resultMap = Maps.newHashMap();
-        resultMap.put("proxyChannel", allProxyServerChannel);
-        resultMap.put("userChannel", allUserServerChannel);
+        List<AddressInfo> allIntranetProxyServerChannel = PangolinChannelContext.getAllIntranetProxyChannel()
+                .stream()
+                .map(ChannelAddressUtils::buildAddressInfo)
+                .collect(Collectors.toList());
+
+        Map<String, List<AddressInfo>> resultMap = Maps.newHashMap();
+        resultMap.put("allIntranetProxyServerChannel", allIntranetProxyServerChannel);
+        resultMap.put("allPublicServerChannel", allPublicNetworkAddressInfoList);
+
         return JSON.toJSONString(resultMap);
     }
+
+
+
+
+
+
+
 }

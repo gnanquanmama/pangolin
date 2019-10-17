@@ -1,17 +1,25 @@
 package com.mcoding.pangolin.server.handler;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.constant.Constants;
+import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.util.PangolinChannelContext;
 import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.util.RequestChainTraceTable;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -54,9 +62,47 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
             case MessageType.HEART_BEAT:
                 handleHeartBeat(ctx, msg);
                 break;
+            case MessageType.CHAIN_TRACE:
+                handleChainTrace(ctx, msg);
+                break;
             default:
                 break;
         }
+    }
+
+    private void handleChainTrace(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
+        log.info("EVENT=收取到追踪信息|MSG={}", msg.getData().toStringUtf8());
+
+        String data = msg.getData().toStringUtf8();
+        List<AddressInfo> clientAddressList = JSON.parseObject(data, new TypeReference<List<AddressInfo>>(){});
+
+        AddressInfo clientProxyAddress = null;
+        AddressInfo clientTargetAddress = null;
+
+        for (AddressInfo addressInfo : clientAddressList) {
+            if (StringUtil.isNullOrEmpty(addressInfo.getSessionId())){
+                clientProxyAddress = addressInfo;
+            } else {
+                clientTargetAddress = addressInfo;
+            }
+        }
+
+        String privateKey = clientProxyAddress.getPrivateKey();
+        String sessionId = clientTargetAddress.getSessionId();
+
+        Channel intranetProxyChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
+        Channel publicNetworkChannel = PangolinChannelContext.getPublicNetworkChannel(sessionId);
+
+        AddressInfo serverIntranetProxyChannel = ChannelAddressUtils.buildAddressInfo(intranetProxyChannel);
+        AddressInfo serverPublicNetworkChannel = ChannelAddressUtils.buildAddressInfo(publicNetworkChannel);
+
+        List<AddressInfo> requestAddressList = Lists.newArrayList();
+        requestAddressList.add(serverPublicNetworkChannel);
+        requestAddressList.add(serverIntranetProxyChannel);
+        requestAddressList.add(clientProxyAddress);
+        requestAddressList.add(clientTargetAddress);
+
+        RequestChainTraceTable.add(sessionId, requestAddressList);
     }
 
     private void handleHeartBeat(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
