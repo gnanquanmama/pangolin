@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
 import com.mcoding.pangolin.client.entity.ProxyInfo;
 import com.mcoding.pangolin.client.util.PangolinChannelContext;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
@@ -19,13 +19,13 @@ import java.util.Objects;
  * @version 1.0
  */
 @Slf4j
-public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
+public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
 
     private ProxyInfo proxyInfo;
     private Bootstrap realServerBootstrap;
     private ClientContainer clientContainer;
 
-    public ProxyClientChannelHandler(ProxyInfo proxyInfo, Bootstrap realServerBootstrap, ClientContainer clientContainer) {
+    public IntranetProxyChannelHandler(ProxyInfo proxyInfo, Bootstrap realServerBootstrap, ClientContainer clientContainer) {
         this.proxyInfo = proxyInfo;
         this.realServerBootstrap = realServerBootstrap;
         this.clientContainer = clientContainer;
@@ -66,7 +66,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     public void channelInactive(ChannelHandlerContext ctx) {
         log.warn("EVENT=代理通道掉线，关闭所有通道{}", PangolinChannelContext.getAllChannelList());
 
-        PangolinChannelContext.closeAll();
+        PangolinChannelContext.unBindAll();
         this.clientContainer.channelInActive(ctx);
     }
 
@@ -79,8 +79,11 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
     private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         ByteString data = message.getData();
         if (Constants.AUTH_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
-            PangolinChannelContext.addProxyChannel(ctx.channel());
+            ctx.channel().attr(Constants.SESSION_ID).set(message.getSessionId());
+            ctx.channel().attr(Constants.PRIVATE_KEY).set(message.getPrivateKey());
+            PangolinChannelContext.bindIntranetProxyChannel(ctx.channel());
             log.info("EVENT=认证成功");
+
         } else {
             log.error("EVENT=认证异常|DESC={}", data.toStringUtf8());
             System.exit(0);
@@ -89,18 +92,18 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
 
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
-        PangolinChannelContext.closeUserChannel(sessionId);
+        PangolinChannelContext.unBindTargetServerChannel(sessionId);
         log.info("EVENT=公网访问连接断开，关闭被代理服务器通道");
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        Channel userChannel = PangolinChannelContext.getUserChannel(message.getSessionId());
+        Channel userChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
     }
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
-        Channel userChannel = PangolinChannelContext.getUserChannel(sessionId);
+        Channel userChannel = PangolinChannelContext.getTargetChannel(sessionId);
         if (Objects.nonNull(userChannel)) {
             log.info("EVENT=连接被代理服务|DESC=通道已连接，不需要重新连接");
             return;
@@ -119,7 +122,7 @@ public class ProxyClientChannelHandler extends SimpleChannelInboundHandler<PMess
 
                     log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
                     future.channel().attr(Constants.SESSION_ID).set(sessionId);
-                    PangolinChannelContext.addUserChannel(sessionId, future.channel());
+                    PangolinChannelContext.bindTargetServerChannel(sessionId, future.channel());
 
                     PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
                             .setSessionId(sessionId).setType(MessageType.CONNECT).build();

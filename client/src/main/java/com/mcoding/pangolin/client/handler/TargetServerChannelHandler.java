@@ -1,8 +1,12 @@
 package com.mcoding.pangolin.client.handler;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.util.PangolinChannelContext;
-import com.mcoding.pangolin.protocol.Constants;
+import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.util.ChannelAddressUtils;
+import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.buffer.ByteBuf;
@@ -13,16 +17,43 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Objects;
 
 /**
+ * 目标服务通道处理器
+ *
  * @author wzt on 2019/6/17.
  * @version 1.0
  */
 
 @AllArgsConstructor
 @Slf4j
-public class RealServerConnectionHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class TargetServerChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        log.info("EVENT=激活目标服务通道");
+
+        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
+        PangolinChannelContext.bindTargetServerChannel(sessionId, ctx.channel());
+
+        AddressInfo targetServerChannelAddressInfo = ChannelAddressUtils.buildAddressInfo(ctx.channel());
+
+        Channel intranetProxyChannel = PangolinChannelContext.getIntranetProxyChannel();
+        AddressInfo intranetProxyChannelAddressInfo = ChannelAddressUtils.buildAddressInfo(intranetProxyChannel);
+
+        List<AddressInfo> addressInfoList = Lists.newArrayList(targetServerChannelAddressInfo, intranetProxyChannelAddressInfo);
+
+        PMessageOuterClass.PMessage chainTraceMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.CHAIN_TRACE)
+                .setData(ByteString.copyFrom(JSON.toJSONString(addressInfoList), Charset.defaultCharset()))
+                .setSessionId(sessionId)
+                .build();
+        intranetProxyChannel.writeAndFlush(chainTraceMsg);
+
+    }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) {
@@ -35,7 +66,7 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
                 .setData(ByteString.copyFrom(content))
                 .setSessionId(sessionId)
                 .build();
-        Channel proxyChannel = PangolinChannelContext.getProxyChannel();
+        Channel proxyChannel = PangolinChannelContext.getIntranetProxyChannel();
         proxyChannel.writeAndFlush(respMsg);
     }
 
@@ -45,30 +76,22 @@ public class RealServerConnectionHandler extends SimpleChannelInboundHandler<Byt
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        log.info("EVENT=激活被代理通道");
-
-        String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
-        PangolinChannelContext.addUserChannel(sessionId, ctx.channel());
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
-        Channel userChannel = PangolinChannelContext.getUserChannel(sessionId);
+        Channel userChannel = PangolinChannelContext.getTargetChannel(sessionId);
         if (Objects.isNull(userChannel)) {
             log.warn("EVENT=用户通道掉线，关闭用户通道|DESC=已关闭通道|SESSION_ID={}", sessionId);
         } else {
-            log.warn("EVENT=用户通道掉线，关闭用户通道{}", PangolinChannelContext.getUserChannel(sessionId));
+            log.warn("EVENT=用户通道掉线，关闭用户通道{}", PangolinChannelContext.getTargetChannel(sessionId));
         }
 
-        PangolinChannelContext.closeUserChannel(sessionId);
+        PangolinChannelContext.unBindTargetServerChannel(sessionId);
 
         PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
                 .setSessionId(sessionId).setType(MessageType.DISCONNECT)
                 .build();
 
-        PangolinChannelContext.getProxyChannel().writeAndFlush(disconnectMsg);
+        PangolinChannelContext.getIntranetProxyChannel().writeAndFlush(disconnectMsg);
 
         log.info("EVENT=关闭公网服务连接通道|SESSION_ID={}", sessionId);
     }

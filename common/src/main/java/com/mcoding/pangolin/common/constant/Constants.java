@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.protocol;
+package com.mcoding.pangolin.common.constant;
 
 import io.netty.util.AttributeKey;
 

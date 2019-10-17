@@ -31,3 +31,6 @@
 
     关闭已失活的通道  
     - http://127.0.0.1:7060/channel/inactive/close
+    
+    查询请求链路信息 
+    - http://127.0.0.1:7060/public/trace/info

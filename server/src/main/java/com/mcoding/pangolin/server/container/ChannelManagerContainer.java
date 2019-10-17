@@ -2,7 +2,7 @@ package com.mcoding.pangolin.server.container;
 
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.common.util.PropertyUtils;
-import com.mcoding.pangolin.server.handler.HttpServerHandler;
+import com.mcoding.pangolin.server.handler.ChannelManagerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,11 +14,13 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * 通道管理容器
+ *
  * @author wzt on 2019/7/3.
  * @version 1.0
  */
 @Slf4j
-public class HttpContainer implements LifeCycle {
+public class ChannelManagerContainer implements LifeCycle {
 
     private static int webPort = PropertyUtils.getInt("web_port");
 
@@ -40,7 +42,7 @@ public class HttpContainer implements LifeCycle {
                                 new HttpRequestDecoder(),
                                 new HttpResponseEncoder(),
                                 new HttpObjectAggregator(1024 * 512),
-                                new HttpServerHandler());
+                                new ChannelManagerHandler());
                     }
                 });
 
