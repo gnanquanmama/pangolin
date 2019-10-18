@@ -2,7 +2,7 @@ package com.mcoding.pangolin.client.handler;
 
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
-import com.mcoding.pangolin.client.entity.ProxyInfo;
+import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.client.util.PangolinChannelContext;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
@@ -21,12 +21,12 @@ import java.util.Objects;
 @Slf4j
 public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMessageOuterClass.PMessage> {
 
-    private ProxyInfo proxyInfo;
+    private AddressBridgeInfo addressBridgeInfo;
     private Bootstrap realServerBootstrap;
     private ClientContainer clientContainer;
 
-    public IntranetProxyChannelHandler(ProxyInfo proxyInfo, Bootstrap realServerBootstrap, ClientContainer clientContainer) {
-        this.proxyInfo = proxyInfo;
+    public IntranetProxyChannelHandler(AddressBridgeInfo addressBridgeInfo, Bootstrap realServerBootstrap, ClientContainer clientContainer) {
+        this.addressBridgeInfo = addressBridgeInfo;
         this.realServerBootstrap = realServerBootstrap;
         this.clientContainer = clientContainer;
     }
@@ -35,7 +35,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     public void channelActive(ChannelHandlerContext ctx) {
         // 发送认证私钥
         PMessageOuterClass.PMessage connectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setPrivateKey(proxyInfo.getPrivateKey())
+                .setPrivateKey(addressBridgeInfo.getPrivateKey())
                 .setType(MessageType.AUTH)
                 .build();
         ctx.channel().writeAndFlush(connectMsg);
@@ -109,8 +109,8 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
             return;
         }
 
-        String realServerHost = proxyInfo.getRealServerHost();
-        Integer realServerPort = proxyInfo.getRealServerPort();
+        String realServerHost = addressBridgeInfo.getTargetServerHost();
+        Integer realServerPort = addressBridgeInfo.getTargetServerPort();
 
         realServerBootstrap
                 .connect(realServerHost, realServerPort)

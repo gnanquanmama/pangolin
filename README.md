@@ -12,13 +12,13 @@
         ]
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
-    4. java -jar pangolin_client.jar -p_host [xxxx] -p_port 7500 -r_host [yyyy] -r_port [zzzz] -p_key qaz123
+    4. java -jar pangolin_client.jar -i_host [xxxx] -i_port 7500 -t_host [yyyy] -t_port [zzzz] -p_key qaz123
 
 #### Argument Description  
-    p_host 代理服务器主机名称  
-    p_port 代理服务器端口  
-    r_host 被代理机器主机名称  
-    r_port 被代理机器端口  
+    i_host 内网代理服务器主机名称  
+    i_port 内网代理服务器端口  
+    t_host 被代理机器主机名称  
+    t_port 被代理机器端口  
     p_key 客户端分配的私钥
 
 

@@ -1,10 +1,11 @@
 package com.mcoding.pangolin.client;
 
 import com.mcoding.pangolin.client.container.ClientContainer;
-import com.mcoding.pangolin.client.entity.ProxyInfo;
+import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.common.PangolinEngine;
-import io.netty.util.internal.StringUtil;
+import com.mcoding.pangolin.common.util.PropertyUtils;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author wzt on 2019/6/17.
@@ -14,8 +15,8 @@ public class ClientMain {
 
 
     public static void main(String[] args) throws ParseException {
-        ProxyInfo proxyInfo = buildProxyInfo(args);
-        PangolinEngine.start(new ClientContainer(proxyInfo));
+        AddressBridgeInfo addressBridgeInfo = buildProxyInfo(args);
+        PangolinEngine.start(new ClientContainer(addressBridgeInfo));
     }
 
 
@@ -26,48 +27,53 @@ public class ClientMain {
      * @return
      * @throws ParseException
      */
-    private static ProxyInfo buildProxyInfo(String[] args) throws ParseException {
+    private static AddressBridgeInfo buildProxyInfo(String[] args) throws ParseException {
+
+        // 读取配置文件信息，初始化 管道的桥接信息
+        AddressBridgeInfo addressBridgeInfo = new AddressBridgeInfo();
+        addressBridgeInfo.setPrivateKey(PropertyUtils.get("private_key"));
+        addressBridgeInfo.setTargetServerHost(PropertyUtils.get("target_server_host"));
+        addressBridgeInfo.setTargetServerPort(PropertyUtils.getInt("target_Server_port"));
+        addressBridgeInfo.setIntranetProxyServerHost(PropertyUtils.get("intranet_proxy_server_host"));
+        addressBridgeInfo.setIntranetProxyServerPort(PropertyUtils.getInt("intranet_proxy_server_port"));
+
+
         Options argOptions = buildOption();
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(argOptions, args);
-        String proxyServerHost = cmd.getOptionValue("p_host");
-        if (StringUtil.isNullOrEmpty(proxyServerHost)) {
-            proxyServerHost = "127.0.0.1";
-        }
-        String proxyServerPort = cmd.getOptionValue("p_port");
-        if (StringUtil.isNullOrEmpty(proxyServerPort)) {
-            proxyServerPort = "7500";
-        }
-        String realServerHost = cmd.getOptionValue("r_host");
-        if (StringUtil.isNullOrEmpty(realServerHost)) {
-            realServerHost = "192.168.126.144";
-        }
-        String realServerPort = cmd.getOptionValue("r_port");
-        if (StringUtil.isNullOrEmpty(realServerPort)) {
-            realServerPort = "22";
-        }
+
         String privateKey = cmd.getOptionValue("p_key");
-        if (StringUtil.isNullOrEmpty(privateKey)) {
-            privateKey = "qaz123";
+        if (StringUtils.isNoneBlank(privateKey)) {
+            addressBridgeInfo.setPrivateKey(privateKey);
         }
 
-        ProxyInfo proxyInfo = new ProxyInfo();
-        proxyInfo.setPrivateKey(privateKey);
-        proxyInfo.setRealServerHost(realServerHost);
-        proxyInfo.setRealServerPort(Integer.valueOf(realServerPort));
-        proxyInfo.setProxyServerHost(proxyServerHost);
-        proxyInfo.setProxyServerPort(Integer.valueOf(proxyServerPort));
+        String intranetProxyServerHost = cmd.getOptionValue("i_host");
+        if (StringUtils.isNoneBlank(intranetProxyServerHost)) {
+            addressBridgeInfo.setIntranetProxyServerHost(intranetProxyServerHost);
+        }
+        String intranetProxyServerPort = cmd.getOptionValue("i_port");
+        if (StringUtils.isNoneBlank(intranetProxyServerPort)) {
+            addressBridgeInfo.setIntranetProxyServerPort(Integer.valueOf(intranetProxyServerPort));
+        }
+        String targetServerHost = cmd.getOptionValue("t_host");
+        if (StringUtils.isNoneBlank(targetServerHost)) {
+            addressBridgeInfo.setTargetServerHost(targetServerHost);
+        }
+        String targetServerPort = cmd.getOptionValue("t_port");
+        if (StringUtils.isNoneBlank(targetServerPort)) {
+            addressBridgeInfo.setTargetServerPort(Integer.valueOf(targetServerPort));
+        }
 
-        return proxyInfo;
+        return addressBridgeInfo;
     }
 
     private static Options buildOption() {
         Options options = new Options();
-        options.addOption("p_host", true, "");
-        options.addOption("p_port", true, "");
-        options.addOption("r_host", true, "");
-        options.addOption("r_port", true, "");
         options.addOption("p_key", true, "");
+        options.addOption("i_host", true, "");
+        options.addOption("i_port", true, "");
+        options.addOption("t_host", true, "");
+        options.addOption("t_port", true, "");
 
         return options;
     }
