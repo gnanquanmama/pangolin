@@ -4,10 +4,12 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.util.PangolinChannelContext;
-import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
-import com.mcoding.pangolin.server.util.RequestChainTraceTable;
-import com.mcoding.pangolin.server.util.SessionIdProducer;
+import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
+import com.mcoding.pangolin.server.flow.FlowEvent;
+import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.context.RequestChainTraceTable;
+import com.mcoding.pangolin.server.context.SessionIdProducer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
@@ -27,7 +29,7 @@ import java.util.Objects;
 @Slf4j
 public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private SessionIdProducer sessionIdProducer = new SessionIdProducer();
+    private static SessionIdProducer sessionIdProducer = new SessionIdProducer();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -72,15 +74,9 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
+
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-        byte[] data = ByteBufUtil.getBytes(msg);
-
-        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setType(MessageType.TRANSFER)
-                .setSessionId(sessionId)
-                .setData(ByteString.copyFrom(data))
-                .build();
 
         Channel proxyServerChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
         if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
@@ -89,7 +85,21 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
             return;
         }
 
+        byte[] data = ByteBufUtil.getBytes(msg);
+        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                .setType(MessageType.TRANSFER)
+                .setSessionId(sessionId)
+                .setData(ByteString.copyFrom(data))
+                .build();
+
         proxyServerChannel.writeAndFlush(disconnectMsg);
+
+        // 记录流入流量字节数量
+        FlowEvent flowEvent = new FlowEvent();
+        flowEvent.setUserPrivateKye(privateKey);
+        flowEvent.setInFlow(data.length);
+        flowEvent.setOutFlow(0);
+        FlowEventBusSingleton.getInstance().post(flowEvent);
     }
 
     @Override

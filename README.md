@@ -3,22 +3,22 @@
 
 #### How To Use
 
-    1. 配置server模块下的user.json文件对应的公网访问端口
+    1. 配置server模块下的pub_net_conf.json文件对应的公网访问端口
         [
             {
-                "privateKey": "qaz123",
-                "publicPort": 9797
+                "pub_net_port": 9797,
+                "user_private_key": "qaz123"
             }
         ]
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
-    4. java -jar pangolin_client.jar -p_host [xxxx] -p_port 7500 -r_host [yyyy] -r_port [zzzz] -p_key qaz123
+    4. java -jar pangolin_client.jar -i_host [xxxx] -i_port 7500 -t_host [yyyy] -t_port [zzzz] -p_key qaz123
 
 #### Argument Description  
-    p_host 代理服务器主机名称  
-    p_port 代理服务器端口  
-    r_host 被代理机器主机名称  
-    r_port 被代理机器端口  
+    i_host 内网代理服务器主机名称  
+    i_port 内网代理服务器端口  
+    t_host 被代理机器主机名称  
+    t_port 被代理机器端口  
     p_key 客户端分配的私钥
 
 
@@ -34,3 +34,6 @@
     
     查询请求链路信息 
     - http://127.0.0.1:7060/public/trace/info
+    
+    查询用户流量信息 
+    - http://127.0.0.1:7060/public/flow/info

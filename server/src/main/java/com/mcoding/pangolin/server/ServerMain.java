@@ -1,9 +1,12 @@
 package com.mcoding.pangolin.server;
 
+import com.google.common.eventbus.AsyncEventBus;
 import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.container.ChannelManagerContainer;
 import com.mcoding.pangolin.server.container.BaseChannelServerContainer;
+import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
+import com.mcoding.pangolin.server.flow.FlowListener;
 
 import java.util.Objects;
 
@@ -20,6 +23,11 @@ public class ServerMain {
         }
 
         PangolinEngine.start(new ChannelManagerContainer(), new BaseChannelServerContainer(defaultServerPort));
+
+
+        // 流量监控总线
+        AsyncEventBus eventBus = FlowEventBusSingleton.getInstance();
+        eventBus.register(new FlowListener());
     }
 
 }

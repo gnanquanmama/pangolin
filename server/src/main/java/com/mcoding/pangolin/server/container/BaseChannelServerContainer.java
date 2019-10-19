@@ -5,7 +5,7 @@ import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.handler.IntranetProxyChannelHandler;
 import com.mcoding.pangolin.server.handler.PublicNetWorkChannelHandler;
 import com.mcoding.pangolin.server.handler.ServerIdleStateHandler;
-import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

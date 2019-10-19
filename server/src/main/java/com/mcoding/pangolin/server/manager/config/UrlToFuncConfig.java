@@ -19,6 +19,7 @@ public class UrlToFuncConfig {
         urlToFunc.put("/channel/inactive/close", new CloseInactiveChannelFunc());
         urlToFunc.put("/public/port/conf", new GetPublicNetworkPortConfigFunc());
         urlToFunc.put("/public/trace/info", new GetRequestChainTraceInfoFunc());
+        urlToFunc.put("/public/flow/info", new GetUserFlowInfoFunc());
     }
 
     public static Function<Void, String> getFunction(String relativeUrl) {
