@@ -1,6 +1,6 @@
 package com.mcoding.pangolin.server.manager.func;
 
-import com.mcoding.pangolin.server.util.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import io.netty.channel.Channel;
 
 import java.util.function.Function;

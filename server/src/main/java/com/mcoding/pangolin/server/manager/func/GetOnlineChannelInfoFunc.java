@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
-import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.server.util.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.PangolinChannelContext;
 
 import java.util.List;
 import java.util.Map;

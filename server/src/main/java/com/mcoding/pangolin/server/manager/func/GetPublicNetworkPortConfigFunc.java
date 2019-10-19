@@ -2,7 +2,7 @@ package com.mcoding.pangolin.server.manager.func;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.HashBiMap;
-import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 
 import java.util.function.Function;
 

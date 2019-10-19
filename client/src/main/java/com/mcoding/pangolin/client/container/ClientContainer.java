@@ -86,19 +86,19 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         int intranetProxyPort = addressBridgeInfo.getIntranetProxyServerPort();
 
         try {
-            ChannelFuture channelFuture = intranetProxyClientBootstrap.connect(intranetProxyServerHost, intranetProxyPort).sync();
+            ChannelFuture channelFuture = intranetProxyClientBootstrap.connect(intranetProxyServerHost, intranetProxyPort);
             channelFuture.addListener((ChannelFuture future) -> {
                 if (future.isSuccess()) {
                     log.info("EVENT=连接内网代理服务器|HOST={}|PORT={}|CHANNEL={}", intranetProxyServerHost, intranetProxyPort, future.channel());
                 } else {
-                    ThreadUtils.sleep(5, TimeUnit.SECONDS);
+                    ThreadUtils.sleep(10, TimeUnit.SECONDS);
                     connectIntranetProxyServer();
                 }
             });
 
         } catch (Exception e) {
             e.printStackTrace();
-            ThreadUtils.sleep(5, TimeUnit.SECONDS);
+            ThreadUtils.sleep(10, TimeUnit.SECONDS);
             this.connectIntranetProxyServer();
         }
     }

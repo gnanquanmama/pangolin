@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.util;
+package com.mcoding.pangolin.server.context;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;

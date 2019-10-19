@@ -34,3 +34,6 @@
     
     查询请求链路信息 
     - http://127.0.0.1:7060/public/trace/info
+    
+    查询用户流量信息 
+    - http://127.0.0.1:7060/public/flow/info

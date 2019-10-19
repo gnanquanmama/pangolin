@@ -9,9 +9,11 @@ import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.util.PangolinChannelContext;
-import com.mcoding.pangolin.server.util.PublicNetworkPortTable;
-import com.mcoding.pangolin.server.util.RequestChainTraceTable;
+import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
+import com.mcoding.pangolin.server.flow.FlowEvent;
+import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.context.RequestChainTraceTable;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,7 +56,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
                 handleConnect(ctx, msg);
                 break;
             case MessageType.TRANSFER:
-                handleTransfer(msg);
+                handleTransfer(ctx, msg);
                 break;
             case MessageType.DISCONNECT:
                 handleDisconnect(ctx, msg);
@@ -142,9 +144,18 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         log.info("EVENT=连接认证处理|DESC=认证通过|PRIVATE_KEY={}", privateKey);
     }
 
-    private void handleTransfer(PMessageOuterClass.PMessage msg) {
+    private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg) {
         Channel userChannel = PangolinChannelContext.getPublicNetworkChannel(msg.getSessionId());
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
+
+        // 记录流入流量字节数量
+        FlowEvent flowEvent = new FlowEvent();
+
+        String userPrivateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
+        flowEvent.setUserPrivateKye(userPrivateKey);
+        flowEvent.setInFlow(0);
+        flowEvent.setOutFlow(msg.toByteArray().length);
+        FlowEventBusSingleton.getInstance().post(flowEvent);
     }
 
     @Override
