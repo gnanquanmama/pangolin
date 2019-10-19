@@ -98,8 +98,8 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
         } catch (Exception e) {
             e.printStackTrace();
-            this.connectIntranetProxyServer();
             ThreadUtils.sleep(5, TimeUnit.SECONDS);
+            this.connectIntranetProxyServer();
         }
     }
 

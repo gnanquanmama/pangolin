@@ -3,11 +3,11 @@
 
 #### How To Use
 
-    1. 配置server模块下的user.json文件对应的公网访问端口
+    1. 配置server模块下的pub_net_conf.json文件对应的公网访问端口
         [
             {
-                "privateKey": "qaz123",
-                "publicPort": 9797
+                "pub_net_port": 9797,
+                "user_private_key": "qaz123"
             }
         ]
     2. mvn clean package  

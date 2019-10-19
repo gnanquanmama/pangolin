@@ -8,3 +8,6 @@
 
 /server/target/
 /server/dependency-reduced-pom.xml
+
+/*/*.iml
+*.iml

@@ -2,6 +2,7 @@ package com.mcoding.pangolin.server.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.collect.HashBiMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +22,20 @@ public class PublicNetworkPortTable {
 
     static {
         String userJson = "";
-        try (InputStream inputStream = PublicNetworkPortTable.class.getResourceAsStream("/user.json")){
+        try (InputStream inputStream = PublicNetworkPortTable.class.getResourceAsStream("/pub_net_conf.json")){
             userJson = IOUtils.toString(inputStream, "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        List<PublicPortConfig> publicPortConfigList = JSON.parseObject(userJson,
-                new TypeReference<List<PublicPortConfig>>() {
+        List<UserPubNetPortConfig> userPubNetPortConfigList = JSON.parseObject(userJson,
+                new TypeReference<List<UserPubNetPortConfig>>() {
                 });
 
-        log.info("EVENT=READ公网端口配置|CONTENT={}", JSON.toJSONString(publicPortConfigList));
+        log.info("EVENT=READ公网端口配置|CONTENT={}", JSON.toJSONString(userPubNetPortConfigList));
 
-        for (PublicPortConfig publicPortConfig : publicPortConfigList) {
-            userToPortMap.put(publicPortConfig.getPrivateKey(), publicPortConfig.getPublicPort());
+        for (UserPubNetPortConfig userPubNetPortConfig : userPubNetPortConfigList) {
+            userToPortMap.put(userPubNetPortConfig.getUserPrivateKey(), userPubNetPortConfig.getPubNetPort());
         }
 
     }
@@ -44,9 +45,13 @@ public class PublicNetworkPortTable {
     }
 
     @Data
-    private static class PublicPortConfig {
-        private String privateKey;
-        private Integer publicPort;
+    private static class UserPubNetPortConfig {
+
+        @JSONField(name = "user_private_key")
+        private String userPrivateKey;
+
+        @JSONField(name = "pub_net_port")
+        private Integer pubNetPort;
     }
 }
 
