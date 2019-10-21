@@ -1,12 +1,14 @@
 # Pangolin
-内网穿透工具 基于Java8,netty4.x实现
+轻量级内网穿透工具，类似花生壳工具  
+基于Java8，netty4.x实现，开箱即用，可转发基于TCP的应用层数据流，例如HTTP/HTTPS,SSH。
+
 
 #### How To Use
 
-    1. 配置server模块下的pub_net_conf.json文件对应的公网访问端口
+    1. [可选] 配置server模块下的pub_net_conf.json文件对应的公网访问端口
         [
             {
-                "pub_net_port": 9797,
+                "pub_net_port": 7700,
                 "user_private_key": "qaz123"
             }
         ]
@@ -24,16 +26,16 @@
 
 #### Management Restful Api  
     查询所有在线通道信息  
-    - http://127.0.0.1:7060/channel/online/info  
+    - http://127.0.0.1:7600/channel/online/info  
 
     查询公网端口配置信息  
-    - http://127.0.0.1:7060/public/port/conf  
+    - http://127.0.0.1:7600/public/port/conf  
 
     关闭已失活的通道  
-    - http://127.0.0.1:7060/channel/inactive/close
+    - http://127.0.0.1:7600/channel/inactive/close
     
     查询请求链路信息 
-    - http://127.0.0.1:7060/public/trace/info
+    - http://127.0.0.1:7600/public/trace/info
     
     查询用户流量信息 
-    - http://127.0.0.1:7060/public/flow/info
+    - http://127.0.0.1:7600/public/flow/info
