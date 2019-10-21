@@ -4,6 +4,9 @@ import com.google.common.eventbus.AsyncEventBus;
 
 import java.util.concurrent.Executors;
 
+/**
+ * @author wzt
+ */
 public class FlowEventBusSingleton {
 
 

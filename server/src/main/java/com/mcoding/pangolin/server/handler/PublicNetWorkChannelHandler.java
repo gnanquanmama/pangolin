@@ -56,7 +56,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         Channel publicNetworkChannel = ctx.channel();
         publicNetworkChannel.config().setAutoRead(false);
 
-        String sessionId = this.sessionIdProducer.generate();
+        String sessionId = sessionIdProducer.generate();
 
         publicNetworkChannel.attr(Constants.SESSION_ID).set(sessionId);
         publicNetworkChannel.attr(Constants.PRIVATE_KEY).set(privateKey);

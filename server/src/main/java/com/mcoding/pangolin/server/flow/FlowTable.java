@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FlowTable {
 
-    private static final ConcurrentHashMap<String, Flow> flowMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Flow> flowMap = new ConcurrentHashMap<>();
 
     /**
      * 记录
@@ -19,7 +19,7 @@ public class FlowTable {
      * @param inFlow
      * @param outFlow
      */
-    public static void record(String userPrivateKey, long inFlow, long outFlow) {
+    static void record(String userPrivateKey, long inFlow, long outFlow) {
 
         Flow flow = flowMap.get(userPrivateKey);
         if (flow == null) {
