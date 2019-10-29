@@ -55,6 +55,7 @@ public class BaseChannelServerContainer implements LifeCycle {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -82,6 +83,7 @@ public class BaseChannelServerContainer implements LifeCycle {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)

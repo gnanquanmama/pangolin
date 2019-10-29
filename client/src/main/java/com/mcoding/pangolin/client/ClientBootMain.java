@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author wzt on 2019/6/17.
  * @version 1.0
  */
-public class ClientMain {
+public class ClientBootMain {
 
 
     public static void main(String[] args) throws ParseException {

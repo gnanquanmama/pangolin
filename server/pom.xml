@@ -46,7 +46,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.mcoding.pangolin.server.ServerMain</mainClass>
+                                    <mainClass>com.mcoding.pangolin.server.ServerBootMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

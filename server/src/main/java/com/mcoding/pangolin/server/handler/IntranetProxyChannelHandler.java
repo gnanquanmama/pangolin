@@ -10,7 +10,7 @@ import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
-import com.mcoding.pangolin.server.flow.FlowEvent;
+import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import com.mcoding.pangolin.server.context.RequestChainTraceTable;
@@ -149,13 +149,13 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         userChannel.writeAndFlush(Unpooled.wrappedBuffer(msg.getData().toByteArray()));
 
         // 记录流入流量字节数量
-        FlowEvent flowEvent = new FlowEvent();
+        TrafficEvent trafficEvent = new TrafficEvent();
 
         String userPrivateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-        flowEvent.setUserPrivateKye(userPrivateKey);
-        flowEvent.setInFlow(0);
-        flowEvent.setOutFlow(msg.toByteArray().length);
-        FlowEventBusSingleton.getInstance().post(flowEvent);
+        trafficEvent.setUserPrivateKye(userPrivateKey);
+        trafficEvent.setInFlow(0);
+        trafficEvent.setOutFlow(msg.toByteArray().length);
+        FlowEventBusSingleton.getInstance().post(trafficEvent);
     }
 
     @Override

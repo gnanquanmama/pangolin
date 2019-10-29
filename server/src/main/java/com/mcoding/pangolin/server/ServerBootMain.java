@@ -6,7 +6,7 @@ import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.container.ChannelManagerContainer;
 import com.mcoding.pangolin.server.container.BaseChannelServerContainer;
 import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
-import com.mcoding.pangolin.server.flow.FlowListener;
+import com.mcoding.pangolin.server.traffic.TrafficListener;
 
 import java.util.Objects;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
  * @author wzt on 2019/6/17.
  * @version 1.0
  */
-public class ServerMain {
+public class ServerBootMain {
 
     public static void main(String[] args) {
         int defaultServerPort = PropertyUtils.getInt("default_server_port");
@@ -27,7 +27,7 @@ public class ServerMain {
 
         // 流量监控总线
         AsyncEventBus eventBus = FlowEventBusSingleton.getInstance();
-        eventBus.register(new FlowListener());
+        eventBus.register(new TrafficListener());
     }
 
 }
