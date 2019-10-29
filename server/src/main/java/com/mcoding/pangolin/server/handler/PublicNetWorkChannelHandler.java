@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
+import com.mcoding.pangolin.server.context.TrafficEventBusSingleton;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
@@ -99,7 +99,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         trafficEvent.setUserPrivateKye(privateKey);
         trafficEvent.setInFlow(data.length);
         trafficEvent.setOutFlow(0);
-        FlowEventBusSingleton.getInstance().post(trafficEvent);
+        TrafficEventBusSingleton.getInstance().post(trafficEvent);
     }
 
     @Override

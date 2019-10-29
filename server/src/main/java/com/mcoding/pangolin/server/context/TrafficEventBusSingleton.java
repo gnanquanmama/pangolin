@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 /**
  * @author wzt
  */
-public class FlowEventBusSingleton {
+public class TrafficEventBusSingleton {
 
 
     private static AsyncEventBus eventBus = new AsyncEventBus(Executors.newFixedThreadPool(2));

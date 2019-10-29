@@ -19,7 +19,7 @@ public class TrafficTable {
      * @param inFlow
      * @param outFlow
      */
-    static void record(String userPrivateKey, long inFlow, long outFlow) {
+    public static void record(String userPrivateKey, long inFlow, long outFlow) {
 
         Flow flow = flowMap.get(userPrivateKey);
         if (flow == null) {

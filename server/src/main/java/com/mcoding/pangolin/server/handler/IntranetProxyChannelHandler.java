@@ -9,7 +9,7 @@ import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
+import com.mcoding.pangolin.server.context.TrafficEventBusSingleton;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
@@ -155,7 +155,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         trafficEvent.setUserPrivateKye(userPrivateKey);
         trafficEvent.setInFlow(0);
         trafficEvent.setOutFlow(msg.toByteArray().length);
-        FlowEventBusSingleton.getInstance().post(trafficEvent);
+        TrafficEventBusSingleton.getInstance().post(trafficEvent);
     }
 
     @Override
