@@ -26,6 +26,7 @@
 
 #### Management Tool  
     telnet 127.0.0.1 7600
+    password: root#123
     
     WELCOME TO PANGOLIN CONSOLE... 
     

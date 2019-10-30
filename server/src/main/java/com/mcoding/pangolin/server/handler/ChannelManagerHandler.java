@@ -1,7 +1,5 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.server.manager.func.*;
@@ -11,7 +9,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -39,6 +36,7 @@ public class ChannelManagerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         Channel channel = ctx.channel();
+
         if (StringUtils.isNotBlank(msg) && EXIT.equalsIgnoreCase(msg)) {
             channel.write(Constants.LINE_BREAK + Constants.LINE_BREAK);
             channel.write("BYE BYE BYE ^_^");
@@ -55,13 +53,5 @@ public class ChannelManagerHandler extends SimpleChannelInboundHandler<String> {
         }
     }
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        Channel channel = ctx.channel();
-        channel.write(Constants.LINE_BREAK);
-        channel.write("WELCOME TO PANGOLIN CONSOLE... ");
-        channel.write(Constants.LINE_BREAK + Constants.LINE_BREAK);
 
-        channel.writeAndFlush(new MenuListFunc().apply(null));
-    }
 }
