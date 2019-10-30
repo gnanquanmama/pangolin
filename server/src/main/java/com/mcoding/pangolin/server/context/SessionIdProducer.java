@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SessionIdProducer {
 
-    private static AtomicLong count = new AtomicLong();
+    private AtomicLong count = new AtomicLong();
 
     public String generate() {
         return String.format("pangolin_%07d", count.incrementAndGet());
