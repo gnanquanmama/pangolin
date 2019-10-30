@@ -5,7 +5,7 @@ import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.container.ChannelManagerContainer;
 import com.mcoding.pangolin.server.container.BaseChannelServerContainer;
-import com.mcoding.pangolin.server.context.TrafficEventBusSingleton;
+import com.mcoding.pangolin.server.context.TrafficEventBus;
 import com.mcoding.pangolin.server.traffic.TrafficListener;
 
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class ServerBootMain {
 
 
         // 流量监控总线
-        AsyncEventBus eventBus = TrafficEventBusSingleton.getInstance();
+        AsyncEventBus eventBus = TrafficEventBus.getInstance();
         eventBus.register(new TrafficListener());
     }
 

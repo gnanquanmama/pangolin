@@ -7,13 +7,13 @@ import java.util.concurrent.Executors;
 /**
  * @author wzt
  */
-public class TrafficEventBusSingleton {
+public class TrafficEventBus {
 
 
-    private static AsyncEventBus eventBus = new AsyncEventBus(Executors.newFixedThreadPool(2));
+    private final static AsyncEventBus INSTANCE = new AsyncEventBus(Executors.newFixedThreadPool(2));
 
     public static AsyncEventBus getInstance() {
-        return eventBus;
+        return INSTANCE;
     }
 
 

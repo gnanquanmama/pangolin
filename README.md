@@ -24,18 +24,17 @@
     p_key 客户端分配的私钥
 
 
-#### Management Restful Api  
-    查询所有在线通道信息  
-    - http://127.0.0.1:7600/channel/online/info  
-
-    查询公网端口配置信息  
-    - http://127.0.0.1:7600/public/port/conf  
-
-    关闭已失活的通道  
-    - http://127.0.0.1:7600/channel/inactive/close
+#### Management Tool  
+    telnet 127.0.0.1 7600
     
-    查询请求链路信息 
-    - http://127.0.0.1:7600/public/trace/info
+    WELCOME TO PANGOLIN CONSOLE... 
     
-    查询用户流量信息 
-    - http://127.0.0.1:7600/public/flow/info
+    >>> 0.菜单
+    >>> 1.查询所有在线通道信息
+    >>> 2.查询公网端口配置信息
+    >>> 3.关闭已失活的通道
+    >>> 4.查询请求链路信息
+    >>> 5.查询用户流量信息
+    >>> x.退出请输入exit
+    >>> 请输入对应的数字...
+    

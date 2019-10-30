@@ -14,4 +14,6 @@ public interface Constants {
     String AUTH_SUCCESS = "ok";
     String AUTH_FAIL = "fail";
 
+    String LINE_BREAK = "\r\n";
+
 }
