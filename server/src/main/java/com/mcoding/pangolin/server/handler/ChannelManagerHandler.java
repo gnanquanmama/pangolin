@@ -1,12 +1,18 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.server.manager.config.UrlToFuncConfig;
-import io.netty.buffer.Unpooled;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.mcoding.pangolin.common.constant.Constants;
+import com.mcoding.pangolin.server.manager.func.*;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -15,33 +21,47 @@ import java.util.function.Function;
  * @version 1.0
  */
 @Slf4j
-public class ChannelManagerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class ChannelManagerHandler extends SimpleChannelInboundHandler<String> {
 
+    private static final String EXIT = "exit";
 
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest httpRequest) {
-        String responseContent = "";
+    private static Map<String, Function<Void, String>> commandToFunc = Maps.newHashMap();
 
-        String relativeUrl = httpRequest.uri();
-
-        Function<Void, String> handlerFunc = UrlToFuncConfig.getFunction(relativeUrl);
-        if (Objects.isNull(handlerFunc)) {
-            responseContent = relativeUrl + "不存在对应的服务";
-        } else {
-            responseContent = handlerFunc.apply(null);
-        }
-
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1,
-                HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(responseContent.getBytes()));
-
-        HttpHeaders heads = response.headers();
-        heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN + "; charset=UTF-8");
-        heads.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        heads.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-
-        ctx.writeAndFlush(response);
+    static {
+        commandToFunc.put("0", new MenuListFunc());
+        commandToFunc.put("1", new GetOnlineChannelInfoFunc());
+        commandToFunc.put("2", new CloseInactiveChannelFunc());
+        commandToFunc.put("3", new GetPublicNetworkPortConfigFunc());
+        commandToFunc.put("4", new GetRequestChainTraceInfoFunc());
+        commandToFunc.put("5", new GetUserFlowInfoFunc());
     }
 
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) {
+        Channel channel = ctx.channel();
+        if (StringUtils.isNotBlank(msg) && EXIT.equalsIgnoreCase(msg)) {
+            channel.write(Constants.LINE_BREAK + Constants.LINE_BREAK);
+            channel.write("BYE BYE BYE ^_^");
+            channel.writeAndFlush(Constants.LINE_BREAK + Constants.LINE_BREAK);
+            channel.close();
+            return;
+        }
+
+        Function<Void, String> func = commandToFunc.get(msg);
+        if (Objects.nonNull(func)) {
+            ctx.channel().writeAndFlush(func.apply(null) + Constants.LINE_BREAK);
+        } else {
+            ctx.channel().writeAndFlush("请输入正确的数字..." + Constants.LINE_BREAK);
+        }
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
+        channel.write(Constants.LINE_BREAK);
+        channel.write("WELCOME TO PANGOLIN CONSOLE... ");
+        channel.write(Constants.LINE_BREAK + Constants.LINE_BREAK);
+
+        channel.writeAndFlush(new MenuListFunc().apply(null));
+    }
 }

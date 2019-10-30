@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.manager.func;
 
 import com.alibaba.fastjson.JSON;
-import com.mcoding.pangolin.server.flow.FlowTable;
+import com.mcoding.pangolin.server.context.TrafficTable;
 
 import java.util.function.Function;
 
@@ -13,6 +13,6 @@ public class GetUserFlowInfoFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        return JSON.toJSONString(FlowTable.get());
+        return JSON.toJSONString(TrafficTable.get());
     }
 }

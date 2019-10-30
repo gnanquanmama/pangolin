@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.flow;
+package com.mcoding.pangolin.server.traffic;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import lombok.Data;
  * @author wzt
  */
 @Data
-public class FlowEvent {
+public class TrafficEvent {
 
     private String userPrivateKye;
     private long inFlow = 0;

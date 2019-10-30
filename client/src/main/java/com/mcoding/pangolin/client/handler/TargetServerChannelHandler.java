@@ -3,7 +3,7 @@ package com.mcoding.pangolin.client.handler;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
-import com.mcoding.pangolin.client.util.PangolinChannelContext;
+import com.mcoding.pangolin.client.context.PangolinChannelContext;
 import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.common.constant.Constants;
@@ -34,7 +34,7 @@ public class TargetServerChannelHandler extends SimpleChannelInboundHandler<Byte
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        log.info("EVENT=激活目标服务通道");
+        log.info("EVENT=激活目标服务通道-{}", ctx.channel().toString());
 
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         PangolinChannelContext.bindTargetServerChannel(sessionId, ctx.channel());
@@ -80,9 +80,9 @@ public class TargetServerChannelHandler extends SimpleChannelInboundHandler<Byte
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         Channel userChannel = PangolinChannelContext.getTargetChannel(sessionId);
         if (Objects.isNull(userChannel)) {
-            log.warn("EVENT=用户通道掉线，关闭用户通道|DESC=已关闭通道|SESSION_ID={}", sessionId);
+            log.warn("EVENT=目标服务通道掉线，关闭用户通道|DESC=已关闭通道|SESSION_ID={}", sessionId);
         } else {
-            log.warn("EVENT=用户通道掉线，关闭用户通道{}", PangolinChannelContext.getTargetChannel(sessionId));
+            log.warn("EVENT=目标服务通道掉线，关闭用户通道{}", PangolinChannelContext.getTargetChannel(sessionId));
         }
 
         PangolinChannelContext.unBindTargetServerChannel(sessionId);
@@ -98,13 +98,13 @@ public class TargetServerChannelHandler extends SimpleChannelInboundHandler<Byte
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("EVENT=用户通道异常|CHANNEL={}|ERROR_DESC={}", ctx.channel(), cause.getMessage());
+        log.error("EVENT=目标服务通道异常|CHANNEL={}|ERROR_DESC={}", ctx.channel(), cause.getMessage());
         ctx.close();
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        log.info("EVENT=管道可写状态变化" + ctx.channel().isWritable());
+        log.info("EVENT=目标服务管道可写状态变化" + ctx.channel().isWritable());
         super.channelWritabilityChanged(ctx);
     }
 }

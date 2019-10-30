@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.flow;
+package com.mcoding.pangolin.server.context;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author wzt
  */
-public class FlowTable {
+public class TrafficTable {
 
-    private static final ConcurrentHashMap<String, Flow> flowMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Flow> flowMap = new ConcurrentHashMap<>();
 
     /**
      * 记录

@@ -1,10 +1,10 @@
 [
   {
-    "user_private_key": "qaz123",
-    "pub_net_port": 9797
+    "pub_net_port": 7700,
+    "user_private_key": "qaz123"
   },
   {
-    "user_private_key": "wsx456",
-    "pub_net_port": 9798
+    "pub_net_port": 7701,
+    "user_private_key": "wsx456"
   }
 ]

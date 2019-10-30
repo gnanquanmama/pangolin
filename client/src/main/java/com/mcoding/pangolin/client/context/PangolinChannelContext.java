@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.client.util;
+package com.mcoding.pangolin.client.context;
 
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
@@ -6,6 +6,8 @@ import io.netty.channel.Channel;
 import java.util.Map;
 
 /**
+ * 管道上下文
+ *
  * @author wzt on 2019/6/25.
  * @version 1.0
  */

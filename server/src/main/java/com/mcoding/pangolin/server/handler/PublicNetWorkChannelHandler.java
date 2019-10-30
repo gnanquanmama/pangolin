@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.FlowEventBusSingleton;
-import com.mcoding.pangolin.server.flow.FlowEvent;
+import com.mcoding.pangolin.server.context.TrafficEventBus;
+import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import com.mcoding.pangolin.server.context.RequestChainTraceTable;
@@ -56,7 +56,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         Channel publicNetworkChannel = ctx.channel();
         publicNetworkChannel.config().setAutoRead(false);
 
-        String sessionId = this.sessionIdProducer.generate();
+        String sessionId = sessionIdProducer.generate();
 
         publicNetworkChannel.attr(Constants.SESSION_ID).set(sessionId);
         publicNetworkChannel.attr(Constants.PRIVATE_KEY).set(privateKey);
@@ -95,11 +95,11 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         proxyServerChannel.writeAndFlush(disconnectMsg);
 
         // 记录流入流量字节数量
-        FlowEvent flowEvent = new FlowEvent();
-        flowEvent.setUserPrivateKye(privateKey);
-        flowEvent.setInFlow(data.length);
-        flowEvent.setOutFlow(0);
-        FlowEventBusSingleton.getInstance().post(flowEvent);
+        TrafficEvent trafficEvent = new TrafficEvent();
+        trafficEvent.setUserPrivateKye(privateKey);
+        trafficEvent.setInFlow(data.length);
+        trafficEvent.setOutFlow(0);
+        TrafficEventBus.getInstance().post(trafficEvent);
     }
 
     @Override

@@ -4,13 +4,16 @@ import com.google.common.eventbus.AsyncEventBus;
 
 import java.util.concurrent.Executors;
 
-public class FlowEventBusSingleton {
+/**
+ * @author wzt
+ */
+public class TrafficEventBus {
 
 
-    private static AsyncEventBus eventBus = new AsyncEventBus(Executors.newFixedThreadPool(2));
+    private final static AsyncEventBus INSTANCE = new AsyncEventBus(Executors.newFixedThreadPool(2));
 
     public static AsyncEventBus getInstance() {
-        return eventBus;
+        return INSTANCE;
     }
 
 
