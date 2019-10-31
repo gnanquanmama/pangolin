@@ -2,9 +2,9 @@ package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
-import com.mcoding.pangolin.server.codec.packet.ConnectPacket;
-import com.mcoding.pangolin.server.codec.packet.DisconnectPacket;
-import com.mcoding.pangolin.server.codec.packet.TransferPacket;
+import com.mcoding.pangolin.common.codec.ConnectPacket;
+import com.mcoding.pangolin.common.codec.DisconnectPacket;
+import com.mcoding.pangolin.common.codec.TransferPacket;
 import com.mcoding.pangolin.server.context.*;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import io.netty.buffer.ByteBuf;

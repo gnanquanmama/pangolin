@@ -3,6 +3,7 @@ package com.mcoding.pangolin.client.container;
 import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.client.handler.HeartBeatHandler;
 import com.mcoding.pangolin.client.handler.IntranetProxyChannelHandler;
+import com.mcoding.pangolin.client.handler.LoginRequestHandler;
 import com.mcoding.pangolin.client.handler.TargetServerChannelHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
 import com.mcoding.pangolin.client.util.ThreadUtils;
@@ -48,7 +49,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
     private void init() {
         targetServerClientBootstrap = new Bootstrap();
-        targetServerClientBootstrap.group(new NioEventLoopGroup());
+        targetServerClientBootstrap.group(new NioEventLoopGroup(2));
         targetServerClientBootstrap.channel(NioSocketChannel.class);
         targetServerClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         targetServerClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -59,7 +60,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         });
 
         intranetProxyClientBootstrap = new Bootstrap();
-        intranetProxyClientBootstrap.group(new NioEventLoopGroup());
+        intranetProxyClientBootstrap.group(new NioEventLoopGroup(2));
         intranetProxyClientBootstrap.channel(NioSocketChannel.class);
         intranetProxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         intranetProxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -72,6 +73,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                 pipeline.addLast(new ProtobufEncoder());
 
+                pipeline.addLast(new LoginRequestHandler(addressBridgeInfo.getPrivateKey()));
                 pipeline.addLast(new IntranetProxyChannelHandler(addressBridgeInfo, targetServerClientBootstrap, ClientContainer.this));
             }
         });

@@ -1,6 +1,6 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.server.codec.packet.ConnectPacket;
+import com.mcoding.pangolin.common.codec.ConnectPacket;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

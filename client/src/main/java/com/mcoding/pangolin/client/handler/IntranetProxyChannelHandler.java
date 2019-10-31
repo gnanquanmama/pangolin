@@ -1,15 +1,17 @@
 package com.mcoding.pangolin.client.handler;
 
-import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.container.ClientContainer;
-import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.client.context.PangolinChannelContext;
+import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
@@ -32,29 +34,16 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        // 发送认证私钥
-        PMessageOuterClass.PMessage connectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setPrivateKey(addressBridgeInfo.getPrivateKey())
-                .setType(MessageType.LOGIN)
-                .build();
-        ctx.channel().writeAndFlush(connectMsg);
-    }
-
-    @Override
     public void channelRead0(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         switch (message.getType()) {
-            case MessageType.LOGIN:
-                this.handleAuth(ctx, message);
+            case MessageType.TRANSFER:
+                this.handleTransfer(ctx, message);
                 break;
             case MessageType.DISCONNECT:
                 this.handleDisconnect(ctx, message);
                 break;
             case MessageType.CONNECT:
                 this.handleConnectedMessage(ctx, message);
-                break;
-            case MessageType.TRANSFER:
-                this.handleTransfer(ctx, message);
                 break;
             default:
                 break;
@@ -76,20 +65,6 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         ctx.close();
     }
 
-    private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        ByteString data = message.getData();
-        if (Constants.LOGIN_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
-            ctx.channel().attr(Constants.SESSION_ID).set(message.getSessionId());
-            ctx.channel().attr(Constants.PRIVATE_KEY).set(message.getPrivateKey());
-            PangolinChannelContext.bindIntranetProxyChannel(ctx.channel());
-            log.info("EVENT=认证成功");
-
-        } else {
-            log.error("EVENT=认证异常|DESC={}", data.toStringUtf8());
-            System.exit(0);
-        }
-    }
-
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
         PangolinChannelContext.unBindTargetServerChannel(sessionId);
@@ -103,8 +78,8 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
-        Channel userChannel = PangolinChannelContext.getTargetChannel(sessionId);
-        if (Objects.nonNull(userChannel)) {
+        Channel targetChannel = PangolinChannelContext.getTargetChannel(sessionId);
+        if (Objects.nonNull(targetChannel)) {
             log.info("EVENT=连接被代理服务|DESC=通道已连接，不需要重新连接");
             return;
         }

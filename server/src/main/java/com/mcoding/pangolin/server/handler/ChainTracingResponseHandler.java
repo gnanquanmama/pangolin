@@ -5,7 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
-import com.mcoding.pangolin.server.codec.packet.ChainTracePacket;
+import com.mcoding.pangolin.common.codec.ChainTracePacket;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.RequestChainTraceTable;
 import io.netty.channel.Channel;

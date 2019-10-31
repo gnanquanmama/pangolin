@@ -1,6 +1,6 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.server.codec.packet.HeartBeatPacket;
+import com.mcoding.pangolin.common.codec.HeartBeatPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;

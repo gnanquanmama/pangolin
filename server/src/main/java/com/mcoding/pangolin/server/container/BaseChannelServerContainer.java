@@ -98,7 +98,6 @@ public class BaseChannelServerContainer implements LifeCycle {
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                         pipeline.addLast(new ProtobufEncoder());
                         pipeline.addLast(new IntranetPacketEncodeHandler());
-
                         pipeline.addLast(new IntranetPacketDecodeHandler());
                         pipeline.addLast(new IntranetLoginResponseHandler());
                         pipeline.addLast(new IntranetTargetServerConnectedHandler());

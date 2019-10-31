@@ -2,7 +2,7 @@ package com.mcoding.pangolin.server.handler;
 
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.codec.packet.Packet;
+import com.mcoding.pangolin.common.codec.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.codec.packet;
+package com.mcoding.pangolin.common.codec;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.server.codec.packet.TransferPacket;
+import com.mcoding.pangolin.common.codec.TransferPacket;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.TrafficEventBus;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
