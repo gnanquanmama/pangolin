@@ -6,7 +6,7 @@ package com.mcoding.pangolin.protocol;
  */
 public interface MessageType {
 
-    byte AUTH = 1;
+    byte LOGIN = 1;
     byte CONNECT = 2;
     byte TRANSFER = 3;
     byte DISCONNECT = 4;

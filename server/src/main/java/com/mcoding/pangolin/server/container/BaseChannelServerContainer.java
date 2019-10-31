@@ -2,12 +2,13 @@ package com.mcoding.pangolin.server.container;
 
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.handler.IntranetProxyChannelHandler;
-import com.mcoding.pangolin.server.handler.PublicNetWorkChannelHandler;
-import com.mcoding.pangolin.server.handler.ServerIdleStateHandler;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
+import com.mcoding.pangolin.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BaseChannelServerContainer implements LifeCycle {
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(8);
     private int serverPort;
 
     public BaseChannelServerContainer(int serverPort) {
@@ -87,7 +88,6 @@ public class BaseChannelServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1, 1024 * 1024))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -97,15 +97,20 @@ public class BaseChannelServerContainer implements LifeCycle {
                         pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                         pipeline.addLast(new ProtobufEncoder());
-                        pipeline.addLast(new IntranetProxyChannelHandler());
+                        pipeline.addLast(new IntranetPacketEncodeHandler());
+                        pipeline.addLast(new IntranetPacketDecodeHandler());
+                        pipeline.addLast(new IntranetLoginResponseHandler());
+                        pipeline.addLast(new IntranetTargetServerConnectedHandler());
+                        pipeline.addLast(new IntranetTransferResponseHandler());
+                        pipeline.addLast(new IntranetDisConnectResponseHandler());
+                        pipeline.addLast(new IntranetHeartBeatResponseHandler());
+                        pipeline.addLast(new ChainTracingResponseHandler());
                     }
                 });
 
         serverBootstrap.bind(serverPort)
                 .addListener(__ -> log.info("EVENT=开启内网代理管道服务端口[{}]", serverPort));
     }
-
-
 
 
 }
