@@ -1,15 +1,12 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
-import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.TrafficEventBus;
+import com.mcoding.pangolin.server.codec.packet.ConnectPacket;
+import com.mcoding.pangolin.server.codec.packet.DisconnectPacket;
+import com.mcoding.pangolin.server.codec.packet.TransferPacket;
+import com.mcoding.pangolin.server.context.*;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
-import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
-import com.mcoding.pangolin.server.context.RequestChainTraceTable;
-import com.mcoding.pangolin.server.context.SessionIdProducer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
@@ -62,12 +59,12 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         publicNetworkChannel.attr(Constants.PRIVATE_KEY).set(privateKey);
 
 
-        PMessageOuterClass.PMessage connectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setType(MessageType.CONNECT)
-                .setSessionId(sessionId)
-                .build();
+        ConnectPacket connectPacket = new ConnectPacket();
+        connectPacket.setType(MessageType.CONNECT);
+        connectPacket.setSessionId(sessionId);
+        connectPacket.setPrivateKey(privateKey);
 
-        intranetProxyChannel.writeAndFlush(connectMsg);
+        intranetProxyChannel.writeAndFlush(connectPacket);
 
         PangolinChannelContext.bindPublicNetworkChannel(sessionId, publicNetworkChannel);
     }
@@ -86,13 +83,12 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         }
 
         byte[] data = ByteBufUtil.getBytes(msg);
-        PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                .setType(MessageType.TRANSFER)
-                .setSessionId(sessionId)
-                .setData(ByteString.copyFrom(data))
-                .build();
+        TransferPacket transferPacket = new TransferPacket();
+        transferPacket.setType(MessageType.TRANSFER);
+        transferPacket.setSessionId(sessionId);
+        transferPacket.setData(data);
 
-        proxyServerChannel.writeAndFlush(disconnectMsg);
+        proxyServerChannel.writeAndFlush(transferPacket);
 
         // 记录流入流量字节数量
         TrafficEvent trafficEvent = new TrafficEvent();
@@ -115,11 +111,11 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
 
 
         if (Objects.nonNull(proxyChannel) && proxyChannel.isActive()) {
-            PMessageOuterClass.PMessage disconnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                    .setType(MessageType.DISCONNECT)
-                    .setSessionId(sessionId)
-                    .build();
-            proxyChannel.writeAndFlush(disconnectMsg);
+            DisconnectPacket disconnectPacket = new DisconnectPacket();
+            disconnectPacket.setType(MessageType.DISCONNECT);
+            disconnectPacket.setSessionId(sessionId);
+
+            proxyChannel.writeAndFlush(disconnectPacket);
         }
 
         // 清楚请求链路信息

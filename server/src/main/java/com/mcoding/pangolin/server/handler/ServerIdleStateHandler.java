@@ -23,7 +23,7 @@ public class ServerIdleStateHandler extends IdleStateHandler {
     }
 
     @Override
-    protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
+    protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) {
 
         log.error("EVENT=连接空闲检测|DESC=连接超过一个小时没有读取到数据, 关闭连接");
         ctx.channel().close();

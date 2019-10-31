@@ -1,7 +1,9 @@
 package com.mcoding.pangolin.server.context;
 
 import com.google.common.collect.Maps;
+import com.mcoding.pangolin.common.constant.Constants;
 import io.netty.channel.Channel;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,8 +21,14 @@ public class PangolinChannelContext {
     private static Map<String, Channel> publicNetworkChannelMap = Maps.newConcurrentMap();
 
 
-    public static void addProxyServerChannel(String privateKey, Channel channel) {
+    public static void markAsLogin(Channel channel) {
+        String privateKey = channel.attr(Constants.PRIVATE_KEY).get();
         intranetProxyChannelMap.put(privateKey, channel);
+    }
+
+    public static boolean hasLogin(Channel channel) {
+        String privateKey = channel.attr(Constants.PRIVATE_KEY).get();
+        return StringUtils.isBlank(privateKey);
     }
 
     /**

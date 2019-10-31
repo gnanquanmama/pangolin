@@ -11,7 +11,7 @@ public interface Constants {
     AttributeKey<String> SESSION_ID = AttributeKey.newInstance("session_id");
     AttributeKey<String> PRIVATE_KEY = AttributeKey.newInstance("private_key");
 
-    String AUTH_SUCCESS = "ok";
+    String LOGIN_SUCCESS = "ok";
     String AUTH_FAIL = "fail";
 
     String LINE_BREAK = "\r\n";

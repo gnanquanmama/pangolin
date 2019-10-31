@@ -36,7 +36,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         // 发送认证私钥
         PMessageOuterClass.PMessage connectMsg = PMessageOuterClass.PMessage.newBuilder()
                 .setPrivateKey(addressBridgeInfo.getPrivateKey())
-                .setType(MessageType.AUTH)
+                .setType(MessageType.LOGIN)
                 .build();
         ctx.channel().writeAndFlush(connectMsg);
     }
@@ -44,7 +44,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     @Override
     public void channelRead0(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         switch (message.getType()) {
-            case MessageType.AUTH:
+            case MessageType.LOGIN:
                 this.handleAuth(ctx, message);
                 break;
             case MessageType.DISCONNECT:
@@ -78,7 +78,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
 
     private void handleAuth(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         ByteString data = message.getData();
-        if (Constants.AUTH_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
+        if (Constants.LOGIN_SUCCESS.equalsIgnoreCase(data.toStringUtf8())) {
             ctx.channel().attr(Constants.SESSION_ID).set(message.getSessionId());
             ctx.channel().attr(Constants.PRIVATE_KEY).set(message.getPrivateKey());
             PangolinChannelContext.bindIntranetProxyChannel(ctx.channel());
