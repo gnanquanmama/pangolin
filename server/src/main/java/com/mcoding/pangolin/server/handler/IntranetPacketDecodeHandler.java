@@ -6,15 +6,13 @@ import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 指令数据包解析处理器
@@ -23,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessageOuterClass.PMessage> {
 
     private static Map<Byte, Class<? extends Packet>> msgTypeToPacketClass = Maps.newHashMap();
@@ -36,8 +35,7 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
         msgTypeToPacketClass.put(MessageType.CHAIN_TRACE, ChainTracePacket.class);
     }
 
-    private int queueSize = 1000;
-    private CircularFifoQueue<TransferPacket> transferPacketQueue = new CircularFifoQueue<>(queueSize);
+    private TransferPacket transferPacketProtoType = new TransferPacket();
 
     @Override
     protected void decode(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg, List<Object> out) throws Exception {
@@ -45,7 +43,7 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
 
         Packet packet = null;
         if (messageType == MessageType.TRANSFER) {
-            packet = Optional.ofNullable(transferPacketQueue.poll()).orElse(new TransferPacket());
+            packet = transferPacketProtoType.clone();
         } else {
             Class<? extends Packet> packetClass = msgTypeToPacketClass.get((byte) messageType);
             packet = packetClass.newInstance();
@@ -62,28 +60,10 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.info("EVENT=激活内网代理端通道{}", ctx.channel());
-
-        // 缓存 queueSize 个 数据传输对象
-        for (int i = 0; i < queueSize; i++) {
-            transferPacketQueue.offer(new TransferPacket());
-        }
-
-        ctx.channel().eventLoop().schedule(() -> {
-            if (!transferPacketQueue.isFull()) {
-                int currentSize = transferPacketQueue.size();
-                int maxSize = transferPacketQueue.maxSize();
-                for (int i = 0; i < maxSize - currentSize; i++) {
-                    transferPacketQueue.offer(new TransferPacket());
-                }
-            }
-
-        }, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        CircularFifoQueue f;
-
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
         PangolinChannelContext.unBindIntranetProxyChannel(privateKey);
         log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());

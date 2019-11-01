@@ -7,10 +7,10 @@ import lombok.Data;
  * @version 1.0
  */
 @Data
-public class Packet {
+public class Packet implements Cloneable {
 
     private String privateKey;
-    private String  sessionId;
+    private String sessionId;
     private byte[] data;
     private byte type;
 

@@ -72,8 +72,8 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        Channel userChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
-        userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
+        Channel targetChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
+        targetChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
     }
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
