@@ -7,7 +7,7 @@ import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -73,7 +73,8 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         Channel targetChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
-        targetChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
+        ByteBuf byteBuf = ctx.alloc().ioBuffer().writeBytes((message.getData().toByteArray()));
+        targetChannel.writeAndFlush(byteBuf);
     }
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {

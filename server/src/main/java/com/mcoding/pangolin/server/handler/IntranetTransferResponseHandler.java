@@ -22,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @ChannelHandler.Sharable
 public class IntranetTransferResponseHandler extends SimpleChannelInboundHandler<TransferPacket> {
 
-    private TrafficEvent trafficEventProtoType = new TrafficEvent();
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TransferPacket packet) {
         Channel userChannel = PangolinChannelContext.getPublicNetworkChannel(packet.getSessionId());
@@ -31,7 +29,7 @@ public class IntranetTransferResponseHandler extends SimpleChannelInboundHandler
 
         ctx.channel().eventLoop().execute(() -> {
             // 记录流入流量字节数量
-            TrafficEvent trafficEvent = trafficEventProtoType.clone();
+            TrafficEvent trafficEvent = TrafficEvent.INSTANCE.clone();
             String userPrivateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
             trafficEvent.setUserPrivateKye(userPrivateKey);
             trafficEvent.setInFlow(0);

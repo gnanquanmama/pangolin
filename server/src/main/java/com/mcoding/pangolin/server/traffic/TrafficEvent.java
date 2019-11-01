@@ -8,6 +8,8 @@ import lombok.Data;
 @Data
 public class TrafficEvent implements Cloneable {
 
+    public static final TrafficEvent INSTANCE = new TrafficEvent();
+
     private String userPrivateKye;
     private long inFlow = 0;
     private long outFlow = 0;

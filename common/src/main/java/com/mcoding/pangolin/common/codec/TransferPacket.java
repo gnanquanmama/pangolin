@@ -6,6 +6,8 @@ package com.mcoding.pangolin.common.codec;
  */
 public class TransferPacket extends Packet {
 
+    public static final TransferPacket INSTANCE = new TransferPacket();
+
     @Override
     public TransferPacket clone() {
         try {

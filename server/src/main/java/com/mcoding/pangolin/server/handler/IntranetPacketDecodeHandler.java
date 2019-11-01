@@ -35,15 +35,13 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
         msgTypeToPacketClass.put(MessageType.CHAIN_TRACE, ChainTracePacket.class);
     }
 
-    private TransferPacket transferPacketProtoType = new TransferPacket();
-
     @Override
     protected void decode(ChannelHandlerContext ctx, PMessageOuterClass.PMessage msg, List<Object> out) throws Exception {
         int messageType = msg.getType();
 
         Packet packet = null;
         if (messageType == MessageType.TRANSFER) {
-            packet = transferPacketProtoType.clone();
+            packet = TransferPacket.INSTANCE.clone();
         } else {
             Class<? extends Packet> packetClass = msgTypeToPacketClass.get((byte) messageType);
             packet = packetClass.newInstance();
