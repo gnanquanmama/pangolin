@@ -10,6 +10,7 @@ import com.mcoding.pangolin.client.util.ThreadUtils;
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -52,10 +53,11 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         targetServerClientBootstrap.group(new NioEventLoopGroup(2));
         targetServerClientBootstrap.channel(NioSocketChannel.class);
         targetServerClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        targetServerClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         targetServerClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(new TargetServerChannelHandler());
+                ch.pipeline().addLast(TargetServerChannelHandler.INSTANCE);
             }
         });
 
@@ -63,6 +65,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         intranetProxyClientBootstrap.group(new NioEventLoopGroup(2));
         intranetProxyClientBootstrap.channel(NioSocketChannel.class);
         intranetProxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        intranetProxyClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         intranetProxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {

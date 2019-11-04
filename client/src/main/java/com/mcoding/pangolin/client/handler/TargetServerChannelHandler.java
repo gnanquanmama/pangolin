@@ -12,6 +12,7 @@ import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,10 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Slf4j
+@ChannelHandler.Sharable
 public class TargetServerChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+    public static final TargetServerChannelHandler INSTANCE = new TargetServerChannelHandler();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {

@@ -9,6 +9,7 @@ import com.mcoding.pangolin.common.codec.ChainTracePacket;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.RequestChainTraceTable;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.internal.StringUtil;
@@ -23,7 +24,10 @@ import java.util.List;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class ChainTracingResponseHandler extends SimpleChannelInboundHandler<ChainTracePacket> {
+
+    public static final ChainTracingResponseHandler INSTANCE =new ChainTracingResponseHandler();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ChainTracePacket packet) {

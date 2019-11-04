@@ -93,6 +93,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
                 .addListener((ChannelFuture future) -> {
                     if (!future.isSuccess()) {
                         log.error("EVENT=连接被代理服务器失败");
+                        ctx.channel().close();
                         return;
                     }
 

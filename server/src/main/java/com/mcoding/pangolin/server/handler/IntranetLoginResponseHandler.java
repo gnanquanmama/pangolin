@@ -5,6 +5,7 @@ import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,10 @@ import java.util.Objects;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class IntranetLoginResponseHandler extends SimpleChannelInboundHandler<LoginPacket> {
+
+    public static final IntranetLoginResponseHandler INSTANCE = new IntranetLoginResponseHandler();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LoginPacket packet) {

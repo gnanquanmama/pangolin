@@ -24,6 +24,9 @@ import java.util.Map;
 @ChannelHandler.Sharable
 public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessageOuterClass.PMessage> {
 
+    public static final IntranetPacketDecodeHandler INSTANCE = new IntranetPacketDecodeHandler();
+
+
     private static Map<Byte, Class<? extends Packet>> msgTypeToPacketClass = Maps.newHashMap();
 
     static {

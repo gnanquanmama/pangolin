@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 @ChannelHandler.Sharable
 public class IntranetTransferResponseHandler extends SimpleChannelInboundHandler<TransferPacket> {
 
+    public static final IntranetTransferResponseHandler INSTANCE = new IntranetTransferResponseHandler();
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TransferPacket packet) {
         Channel userChannel = PangolinChannelContext.getPublicNetworkChannel(packet.getSessionId());

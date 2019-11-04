@@ -10,6 +10,7 @@ import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,10 @@ import java.util.Objects;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+    public static final PublicNetWorkChannelHandler INSTANCE = new PublicNetWorkChannelHandler();
 
     private static SessionIdProducer sessionIdProducer = new SessionIdProducer();
 
