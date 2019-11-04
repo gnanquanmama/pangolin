@@ -1,11 +1,13 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.google.protobuf.ByteString;
-import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.common.codec.Packet;
+import com.mcoding.pangolin.protocol.PMessageOuterClass;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.set.UnmodifiableNavigableSet;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -17,11 +19,14 @@ import java.util.List;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class IntranetPacketEncodeHandler extends MessageToMessageEncoder<Packet> {
+
+    public static final IntranetPacketEncodeHandler INSTANCE = new IntranetPacketEncodeHandler();
 
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Packet packet, List<Object> out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Packet packet, List<Object> out) {
 
         PMessageOuterClass.PMessage.Builder builder = PMessageOuterClass.PMessage.newBuilder();
         builder.setType(packet.getType());

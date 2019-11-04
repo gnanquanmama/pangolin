@@ -3,6 +3,7 @@ package com.mcoding.pangolin.server.handler;
 import com.mcoding.pangolin.common.codec.ConnectPacket;
 import com.mcoding.pangolin.server.context.PangolinChannelContext;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,10 @@ import lombok.extern.slf4j.Slf4j;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class IntranetTargetServerConnectedHandler extends SimpleChannelInboundHandler<ConnectPacket> {
+
+    public static final IntranetTargetServerConnectedHandler INSTANCE = new IntranetTargetServerConnectedHandler();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ConnectPacket packet) {

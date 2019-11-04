@@ -7,7 +7,7 @@ import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -72,8 +72,9 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
-        Channel userChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
-        userChannel.writeAndFlush(Unpooled.wrappedBuffer(message.getData().toByteArray()));
+        Channel targetChannel = PangolinChannelContext.getTargetChannel(message.getSessionId());
+        ByteBuf byteBuf = ctx.alloc().ioBuffer().writeBytes((message.getData().toByteArray()));
+        targetChannel.writeAndFlush(byteBuf);
     }
 
     private void handleConnectedMessage(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
@@ -92,6 +93,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
                 .addListener((ChannelFuture future) -> {
                     if (!future.isSuccess()) {
                         log.error("EVENT=连接被代理服务器失败");
+                        ctx.channel().close();
                         return;
                     }
 

@@ -5,6 +5,7 @@ import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import com.mcoding.pangolin.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -60,13 +61,15 @@ public class BaseChannelServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast(new ServerIdleStateHandler());
-                        pipeline.addLast(new PublicNetWorkChannelHandler());
+                        pipeline.addLast(PublicNetWorkChannelHandler.INSTANCE);
                     }
                 });
 
@@ -88,6 +91,8 @@ public class BaseChannelServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -97,14 +102,14 @@ public class BaseChannelServerContainer implements LifeCycle {
                         pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                         pipeline.addLast(new ProtobufEncoder());
-                        pipeline.addLast(new IntranetPacketEncodeHandler());
-                        pipeline.addLast(new IntranetPacketDecodeHandler());
-                        pipeline.addLast(new IntranetLoginResponseHandler());
-                        pipeline.addLast(new IntranetTargetServerConnectedHandler());
-                        pipeline.addLast(new IntranetTransferResponseHandler());
-                        pipeline.addLast(new IntranetDisConnectResponseHandler());
-                        pipeline.addLast(new IntranetHeartBeatResponseHandler());
-                        pipeline.addLast(new ChainTracingResponseHandler());
+                        pipeline.addLast(IntranetPacketEncodeHandler.INSTANCE);
+                        pipeline.addLast(IntranetPacketDecodeHandler.INSTANCE);
+                        pipeline.addLast(IntranetLoginResponseHandler.INSTANCE);
+                        pipeline.addLast(IntranetTargetServerConnectedHandler.INSTANCE);
+                        pipeline.addLast(IntranetTransferResponseHandler.INSTANCE);
+                        pipeline.addLast(IntranetDisConnectResponseHandler.INSTANCE);
+                        pipeline.addLast(IntranetHeartBeatResponseHandler.INSTANCE);
+                        pipeline.addLast(ChainTracingResponseHandler.INSTANCE);
                     }
                 });
 

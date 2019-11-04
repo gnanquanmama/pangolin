@@ -1,15 +1,16 @@
 package com.mcoding.pangolin.server.handler;
 
-import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.common.codec.ConnectPacket;
 import com.mcoding.pangolin.common.codec.DisconnectPacket;
 import com.mcoding.pangolin.common.codec.TransferPacket;
+import com.mcoding.pangolin.common.constant.Constants;
+import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.server.context.*;
 import com.mcoding.pangolin.server.traffic.TrafficEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,10 @@ import java.util.Objects;
  * @version 1.0
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+    public static final PublicNetWorkChannelHandler INSTANCE = new PublicNetWorkChannelHandler();
 
     private static SessionIdProducer sessionIdProducer = new SessionIdProducer();
 
@@ -83,7 +87,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         }
 
         byte[] data = ByteBufUtil.getBytes(msg);
-        TransferPacket transferPacket = new TransferPacket();
+        TransferPacket transferPacket = TransferPacket.INSTANCE.clone();
         transferPacket.setType(MessageType.TRANSFER);
         transferPacket.setSessionId(sessionId);
         transferPacket.setData(data);
@@ -91,11 +95,14 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         proxyServerChannel.writeAndFlush(transferPacket);
 
         // 记录流入流量字节数量
-        TrafficEvent trafficEvent = new TrafficEvent();
-        trafficEvent.setUserPrivateKye(privateKey);
-        trafficEvent.setInFlow(data.length);
-        trafficEvent.setOutFlow(0);
-        TrafficEventBus.getInstance().post(trafficEvent);
+        ctx.channel().eventLoop().execute(() -> {
+            TrafficEvent trafficEvent = TrafficEvent.INSTANCE.clone();
+            trafficEvent.setUserPrivateKye(privateKey);
+            trafficEvent.setInFlow(data.length);
+            trafficEvent.setOutFlow(0);
+            TrafficEventBus.getInstance().post(trafficEvent);
+        });
+
     }
 
     @Override
