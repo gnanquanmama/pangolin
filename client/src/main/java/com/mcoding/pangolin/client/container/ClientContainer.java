@@ -52,6 +52,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         targetServerClientBootstrap = new Bootstrap();
         targetServerClientBootstrap.group(new NioEventLoopGroup(1));
         targetServerClientBootstrap.channel(NioSocketChannel.class);
+        targetServerClientBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
         targetServerClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         targetServerClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         targetServerClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -64,6 +65,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         intranetProxyClientBootstrap = new Bootstrap();
         intranetProxyClientBootstrap.group(new NioEventLoopGroup(1));
         intranetProxyClientBootstrap.channel(NioSocketChannel.class);
+        intranetProxyClientBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
         intranetProxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         intranetProxyClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         intranetProxyClientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -91,15 +93,17 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         int intranetProxyPort = addressBridgeInfo.getIntranetProxyServerPort();
 
         try {
-            ChannelFuture channelFuture = intranetProxyClientBootstrap.connect(intranetProxyServerHost, intranetProxyPort);
-            channelFuture.addListener((ChannelFuture future) -> {
-                if (future.isSuccess()) {
-                    log.info("EVENT=连接内网代理服务器|HOST={}|PORT={}|CHANNEL={}", intranetProxyServerHost, intranetProxyPort, future.channel());
-                } else {
-                    ThreadUtils.sleep(10, TimeUnit.SECONDS);
-                    connectIntranetProxyServer();
-                }
-            });
+            intranetProxyClientBootstrap
+                    .connect(intranetProxyServerHost, intranetProxyPort)
+                    .addListener((ChannelFuture future) -> {
+                        if (future.isSuccess()) {
+                            log.info("EVENT=连接内网代理服务器|HOST={}|PORT={}|CHANNEL={}", intranetProxyServerHost, intranetProxyPort, future.channel());
+                        } else {
+                            log.error(future.cause().getMessage());
+                            ThreadUtils.sleep(10, TimeUnit.SECONDS);
+                            connectIntranetProxyServer();
+                        }
+                    });
 
         } catch (Exception e) {
             e.printStackTrace();

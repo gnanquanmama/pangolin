@@ -8,10 +8,7 @@ import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
@@ -53,7 +50,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.warn("EVENT=代理通道掉线，关闭所有通道{}", PangolinChannelContext.getAllChannelList());
+        log.warn("EVENT=内网代理通道掉线，关闭所有通道{}", PangolinChannelContext.getAllChannelList());
 
         PangolinChannelContext.unBindAll();
         this.clientContainer.channelInActive(ctx);
@@ -88,24 +85,36 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         String realServerHost = addressBridgeInfo.getTargetServerHost();
         Integer realServerPort = addressBridgeInfo.getTargetServerPort();
 
-        realServerBootstrap
-                .connect(realServerHost, realServerPort)
-                .addListener((ChannelFuture future) -> {
-                    if (!future.isSuccess()) {
-                        log.error("EVENT=连接被代理服务器失败");
-                        ctx.channel().close();
-                        return;
-                    }
+        try {
+            realServerBootstrap
+                    .connect(realServerHost, realServerPort)
+                    .addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture future) {
+                            if (!future.isSuccess()) {
+                                log.error("EVENT=连接被代理服务器失败|DESC={}", future.cause().getMessage());
+                                PMessageOuterClass.PMessage disConnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                                        .setSessionId(sessionId).setType(MessageType.DISCONNECT).build();
+                                ctx.channel().writeAndFlush(disConnectMsg);
 
-                    log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
-                    future.channel().attr(Constants.SESSION_ID).set(sessionId);
-                    PangolinChannelContext.bindTargetServerChannel(sessionId, future.channel());
+                                return;
+                            }
 
-                    PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
-                            .setSessionId(sessionId).setType(MessageType.CONNECT).build();
+                            log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
+                            future.channel().attr(Constants.SESSION_ID).set(sessionId);
+                            PangolinChannelContext.bindTargetServerChannel(sessionId, future.channel());
 
-                    ctx.channel().writeAndFlush(confirmConnectMsg);
-                });
+                            PMessageOuterClass.PMessage confirmConnectMsg = PMessageOuterClass.PMessage.newBuilder()
+                                    .setSessionId(sessionId).setType(MessageType.CONNECT).build();
+
+                            ctx.channel().writeAndFlush(confirmConnectMsg);
+                        }
+                    }).await();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

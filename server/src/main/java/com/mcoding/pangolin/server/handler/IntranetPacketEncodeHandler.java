@@ -7,7 +7,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.set.UnmodifiableNavigableSet;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
