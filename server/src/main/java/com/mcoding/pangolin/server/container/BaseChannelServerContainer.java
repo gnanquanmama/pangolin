@@ -30,8 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BaseChannelServerContainer implements LifeCycle {
 
-    private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup(8);
+    private EventLoopGroup pubNetBossGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup pubNetWorkerGroup = new NioEventLoopGroup();
+
+    private EventLoopGroup intNetBossGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup intNetWorkerGroup = new NioEventLoopGroup();
+
     private int serverPort;
 
     public BaseChannelServerContainer(int serverPort) {
@@ -46,8 +50,11 @@ public class BaseChannelServerContainer implements LifeCycle {
 
     @Override
     public void close() {
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        pubNetBossGroup.shutdownGracefully();
+        pubNetWorkerGroup.shutdownGracefully();
+
+        intNetBossGroup.shutdownGracefully();
+        intNetWorkerGroup.shutdownGracefully();
     }
 
     /**
@@ -55,7 +62,7 @@ public class BaseChannelServerContainer implements LifeCycle {
      */
     private void startPublicNetworkChannelServer() {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.group(bossGroup, workerGroup)
+        serverBootstrap.group(pubNetBossGroup, pubNetWorkerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -74,8 +81,14 @@ public class BaseChannelServerContainer implements LifeCycle {
                 });
 
         PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
-            serverBootstrap.bind(proxyPort)
-                    .addListener(__ -> log.info("EVENT=开启公网访问端口[{}]", proxyPort));
+            serverBootstrap.bind(proxyPort).addListener(listener -> {
+                if (listener.isSuccess()) {
+                    log.info("EVENT=开启公网访问端口[{}]", proxyPort);
+                } else {
+                    log.error("EVENT=开启公网访问端口[{}]|异常{}",
+                            serverBootstrap, listener.cause().getMessage());
+                }
+            });
         });
 
     }
@@ -85,7 +98,7 @@ public class BaseChannelServerContainer implements LifeCycle {
      */
     private void startIntranetProxyServer() {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.group(bossGroup, workerGroup)
+        serverBootstrap.group(intNetBossGroup, intNetWorkerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -105,16 +118,22 @@ public class BaseChannelServerContainer implements LifeCycle {
                         pipeline.addLast(IntranetPacketEncodeHandler.INSTANCE);
                         pipeline.addLast(IntranetPacketDecodeHandler.INSTANCE);
                         pipeline.addLast(IntranetLoginResponseHandler.INSTANCE);
-                        pipeline.addLast(IntranetTargetServerConnectedHandler.INSTANCE);
                         pipeline.addLast(IntranetTransferResponseHandler.INSTANCE);
+                        pipeline.addLast(IntranetTargetServerConnectedHandler.INSTANCE);
                         pipeline.addLast(IntranetDisConnectResponseHandler.INSTANCE);
                         pipeline.addLast(IntranetHeartBeatResponseHandler.INSTANCE);
                         pipeline.addLast(ChainTracingResponseHandler.INSTANCE);
                     }
                 });
 
-        serverBootstrap.bind(serverPort)
-                .addListener(__ -> log.info("EVENT=开启内网代理管道服务端口[{}]", serverPort));
+        serverBootstrap.bind(serverPort).addListener(listener -> {
+            if (listener.isSuccess()) {
+                log.info("EVENT=开启内网代理管道服务端口[{}]", serverPort);
+            } else {
+                log.error("EVENT=开启内网代理管道服务端口[{}]|异常{}",
+                        serverBootstrap, listener.cause().getMessage());
+            }
+        });
     }
 
 

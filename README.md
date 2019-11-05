@@ -2,6 +2,9 @@
 轻量级内网穿透工具，类似花生壳工具  
 基于Java8，netty4.x实现，开箱即用，可转发基于TCP的应用层数据流，例如HTTP/HTTPS,SSH。
 
+#### Architecture Diagram
+![image](https://raw.githubusercontent.com/gnanquanmama/pangolin/develop/server/src/main/resources/static/architecture.png)
+
 
 #### How To Use
 

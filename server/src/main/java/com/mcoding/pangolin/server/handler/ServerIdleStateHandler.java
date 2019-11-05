@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ServerIdleStateHandler extends IdleStateHandler {
 
-    private static final int READ_IDLE_TIME = 1;
+    private static final int READ_IDLE_TIME = 15;
 
     public ServerIdleStateHandler() {
-        super(READ_IDLE_TIME, 0, 0, TimeUnit.HOURS);
+        super(READ_IDLE_TIME, 0, 0, TimeUnit.MINUTES);
     }
 
     @Override

@@ -25,7 +25,7 @@ public class HeartBeatHandler extends IdleStateHandler {
     }
 
     @Override
-    protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
+    protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) {
         if (IdleStateEvent.WRITER_IDLE_STATE_EVENT == evt) {
             String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
@@ -38,7 +38,7 @@ public class HeartBeatHandler extends IdleStateHandler {
             ctx.channel().writeAndFlush(heartBeatMsg);
             log.info("EVENT=发送心跳包|CHANNEL={}|MSG={}",ctx.channel(), heartBeatMsg.getData().toStringUtf8());
         } else if (IdleStateEvent.READER_IDLE_STATE_EVENT == evt) {
-            log.warn("event=读超时，关闭管道{}", ctx.channel());
+            log.warn("EVENT=读超时，关闭管道{}", ctx.channel());
             ctx.channel().close();
         }
     }
