@@ -50,7 +50,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
 
     private void init() {
         targetServerClientBootstrap = new Bootstrap();
-        targetServerClientBootstrap.group(new NioEventLoopGroup(2));
+        targetServerClientBootstrap.group(new NioEventLoopGroup(1));
         targetServerClientBootstrap.channel(NioSocketChannel.class);
         targetServerClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         targetServerClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
@@ -62,7 +62,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
         });
 
         intranetProxyClientBootstrap = new Bootstrap();
-        intranetProxyClientBootstrap.group(new NioEventLoopGroup(2));
+        intranetProxyClientBootstrap.group(new NioEventLoopGroup(1));
         intranetProxyClientBootstrap.channel(NioSocketChannel.class);
         intranetProxyClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         intranetProxyClientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
@@ -70,7 +70,7 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
             @Override
             public void initChannel(SocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(new HeartBeatHandler(0, 60, 0, TimeUnit.MINUTES));
+                pipeline.addLast(new HeartBeatHandler(0, 15, 0, TimeUnit.MINUTES));
                 pipeline.addLast(new ProtobufVarint32FrameDecoder());
                 pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
