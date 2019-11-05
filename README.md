@@ -39,3 +39,5 @@
     >>> x.退出请输入exit
     >>> 请输入对应的数字...
     
+#### Architecture Diagram
+![image](https://raw.githubusercontent.com/gnanquanmama/pangolin/develop/server/src/main/resources/static/architecture.png)
