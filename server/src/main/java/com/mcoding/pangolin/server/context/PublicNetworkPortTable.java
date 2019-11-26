@@ -22,7 +22,7 @@ public class PublicNetworkPortTable {
 
     static {
         String userJson = "";
-        try (InputStream inputStream = PublicNetworkPortTable.class.getResourceAsStream("/pub_net_conf.json")){
+        try (InputStream inputStream = PublicNetworkPortTable.class.getResourceAsStream("/pub_net_conf.json")) {
             userJson = IOUtils.toString(inputStream, "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
@@ -32,7 +32,7 @@ public class PublicNetworkPortTable {
                 new TypeReference<List<UserPubNetPortConfig>>() {
                 });
 
-        log.info("EVENT=READ公网端口配置|CONTENT={}", JSON.toJSONString(userPubNetPortConfigList));
+        log.info("EVENT=READ PUBLIC NETWORK CONFIGURE|CONTENT={}", JSON.toJSONString(userPubNetPortConfigList));
 
         for (UserPubNetPortConfig userPubNetPortConfig : userPubNetPortConfigList) {
             userToPortMap.put(userPubNetPortConfig.getUserPrivateKey(), userPubNetPortConfig.getPubNetPort());

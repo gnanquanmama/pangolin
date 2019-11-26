@@ -15,7 +15,7 @@ import java.util.Objects;
  * @author wzt on 2019/6/25.
  * @version 1.0
  */
-public class PangolinChannelContext {
+public class ChannelHolderContext {
 
     private static Map<String, Channel> intranetProxyChannelMap = Maps.newConcurrentMap();
     private static Map<String, Channel> publicNetworkChannelMap = Maps.newConcurrentMap();

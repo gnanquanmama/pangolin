@@ -11,7 +11,7 @@ import java.util.Map;
  * @author wzt on 2019/6/25.
  * @version 1.0
  */
-public class PangolinChannelContext {
+public class ChannelHolderContext {
 
     private static Channel intranetProxyChannel = null;
 

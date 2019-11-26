@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.manager.func;
+package com.mcoding.pangolin.server.monitor.func;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.HashBiMap;

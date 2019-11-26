@@ -1,7 +1,8 @@
 package com.mcoding.pangolin.client;
 
-import com.mcoding.pangolin.client.container.ClientContainer;
-import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
+import com.google.common.collect.Lists;
+import com.mcoding.pangolin.client.container.ClientBootstrapContainer;
+import com.mcoding.pangolin.client.model.AddressBridge;
 import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.common.util.PropertyUtils;
 import org.apache.commons.cli.*;
@@ -15,8 +16,8 @@ public class ClientBootMain {
 
 
     public static void main(String[] args) throws ParseException {
-        AddressBridgeInfo addressBridgeInfo = buildProxyInfo(args);
-        PangolinEngine.start(new ClientContainer(addressBridgeInfo));
+        AddressBridge addressBridge = buildProxyInfo(args);
+        PangolinEngine.start(Lists.newArrayList(new ClientBootstrapContainer(addressBridge)));
     }
 
 
@@ -27,15 +28,15 @@ public class ClientBootMain {
      * @return
      * @throws ParseException
      */
-    private static AddressBridgeInfo buildProxyInfo(String[] args) throws ParseException {
+    private static AddressBridge buildProxyInfo(String[] args) throws ParseException {
 
         // 读取配置文件信息，初始化 管道的桥接信息
-        AddressBridgeInfo addressBridgeInfo = new AddressBridgeInfo();
-        addressBridgeInfo.setPrivateKey(PropertyUtils.get("private_key"));
-        addressBridgeInfo.setTargetServerHost(PropertyUtils.get("target_server_host"));
-        addressBridgeInfo.setTargetServerPort(PropertyUtils.getInt("target_Server_port"));
-        addressBridgeInfo.setIntranetProxyServerHost(PropertyUtils.get("intranet_proxy_server_host"));
-        addressBridgeInfo.setIntranetProxyServerPort(PropertyUtils.getInt("intranet_proxy_server_port"));
+        AddressBridge addressBridge = new AddressBridge();
+        addressBridge.setPrivateKey(PropertyUtils.get("private_key"));
+        addressBridge.setTargetServerHost(PropertyUtils.get("target_server_host"));
+        addressBridge.setTargetServerPort(PropertyUtils.getInt("target_Server_port"));
+        addressBridge.setIntranetProxyServerHost(PropertyUtils.get("intranet_proxy_server_host"));
+        addressBridge.setIntranetProxyServerPort(PropertyUtils.getInt("intranet_proxy_server_port"));
 
 
         Options argOptions = buildOption();
@@ -44,27 +45,27 @@ public class ClientBootMain {
 
         String privateKey = cmd.getOptionValue("p_key");
         if (StringUtils.isNoneBlank(privateKey)) {
-            addressBridgeInfo.setPrivateKey(privateKey);
+            addressBridge.setPrivateKey(privateKey);
         }
 
         String intranetProxyServerHost = cmd.getOptionValue("i_host");
         if (StringUtils.isNoneBlank(intranetProxyServerHost)) {
-            addressBridgeInfo.setIntranetProxyServerHost(intranetProxyServerHost);
+            addressBridge.setIntranetProxyServerHost(intranetProxyServerHost);
         }
         String intranetProxyServerPort = cmd.getOptionValue("i_port");
         if (StringUtils.isNoneBlank(intranetProxyServerPort)) {
-            addressBridgeInfo.setIntranetProxyServerPort(Integer.valueOf(intranetProxyServerPort));
+            addressBridge.setIntranetProxyServerPort(Integer.valueOf(intranetProxyServerPort));
         }
         String targetServerHost = cmd.getOptionValue("t_host");
         if (StringUtils.isNoneBlank(targetServerHost)) {
-            addressBridgeInfo.setTargetServerHost(targetServerHost);
+            addressBridge.setTargetServerHost(targetServerHost);
         }
         String targetServerPort = cmd.getOptionValue("t_port");
         if (StringUtils.isNoneBlank(targetServerPort)) {
-            addressBridgeInfo.setTargetServerPort(Integer.valueOf(targetServerPort));
+            addressBridge.setTargetServerPort(Integer.valueOf(targetServerPort));
         }
 
-        return addressBridgeInfo;
+        return addressBridge;
     }
 
     private static Options buildOption() {

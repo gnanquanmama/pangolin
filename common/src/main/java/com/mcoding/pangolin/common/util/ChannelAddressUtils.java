@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.common.util;
 
 import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.model.AddressInfo;
 import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;

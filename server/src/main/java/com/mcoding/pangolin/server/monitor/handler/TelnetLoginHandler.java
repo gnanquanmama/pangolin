@@ -1,10 +1,10 @@
-package com.mcoding.pangolin.server.manager;
+package com.mcoding.pangolin.server.monitor.handler;
 
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.context.SessionIdProducer;
-import com.mcoding.pangolin.server.manager.context.ManagerChannelContext;
-import com.mcoding.pangolin.server.manager.func.MenuListFunc;
+import com.mcoding.pangolin.server.monitor.context.MonitorChannelHolderContext;
+import com.mcoding.pangolin.server.monitor.func.MenuListFunc;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author wzt on 2019/10/30.
  * @version 1.0
  */
-public class LoginRequestHandler extends SimpleChannelInboundHandler<String> {
+public class TelnetLoginHandler extends SimpleChannelInboundHandler<String> {
 
     private static SessionIdProducer sessionIdProducer = new SessionIdProducer();
 
@@ -35,7 +35,7 @@ public class LoginRequestHandler extends SimpleChannelInboundHandler<String> {
                 String newGenerateSessionId = sessionIdProducer.generate();
                 channel.attr(Constants.SESSION_ID).set(newGenerateSessionId);
 
-                ManagerChannelContext.markAsLogin(channel);
+                MonitorChannelHolderContext.markAsLogin(channel);
 
                 // 登录成功，则移除登录校验handler
                 channel.pipeline().remove(this);
@@ -60,7 +60,7 @@ public class LoginRequestHandler extends SimpleChannelInboundHandler<String> {
         Channel channel = ctx.channel();
         String sessionId = channel.attr(Constants.SESSION_ID).get();
         if (StringUtils.isNotBlank(sessionId)) {
-            ManagerChannelContext.unLogin(sessionId);
+            MonitorChannelHolderContext.unLogin(sessionId);
         }
     }
 }

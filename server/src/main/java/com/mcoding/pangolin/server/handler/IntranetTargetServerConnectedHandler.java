@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.handler;
 
 import com.mcoding.pangolin.common.codec.ConnectPacket;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,7 +22,7 @@ public class IntranetTargetServerConnectedHandler extends SimpleChannelInboundHa
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ConnectPacket packet) {
-        Channel publicNetworkChannel = PangolinChannelContext.getPublicNetworkChannel(packet.getSessionId());
+        Channel publicNetworkChannel = ChannelHolderContext.getPublicNetworkChannel(packet.getSessionId());
         publicNetworkChannel.config().setAutoRead(true);
     }
 

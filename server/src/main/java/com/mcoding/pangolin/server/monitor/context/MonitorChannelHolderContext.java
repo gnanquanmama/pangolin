@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.manager.context;
+package com.mcoding.pangolin.server.monitor.context;
 
 import com.google.common.collect.Maps;
 import com.mcoding.pangolin.common.constant.Constants;
@@ -10,7 +10,7 @@ import java.util.Map;
  * @author wzt on 2019/10/30.
  * @version 1.0
  */
-public class ManagerChannelContext {
+public class MonitorChannelHolderContext {
 
 
     private static Map<String, Channel> channelMap = Maps.newConcurrentMap();

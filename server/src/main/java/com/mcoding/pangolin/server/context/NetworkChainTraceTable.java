@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.context;
 
 import com.google.common.collect.Maps;
-import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.model.AddressInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ import java.util.Map;
  * @author wzt on 2019/10/17.
  * @version 1.0
  */
-public class RequestChainTraceTable {
+public class NetworkChainTraceTable {
 
     private static Map<String, List<AddressInfo>> map = Maps.newConcurrentMap();
 

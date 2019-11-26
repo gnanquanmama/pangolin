@@ -1,13 +1,17 @@
 package com.mcoding.pangolin.server;
 
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.AsyncEventBus;
+import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.common.PangolinEngine;
 import com.mcoding.pangolin.common.util.PropertyUtils;
-import com.mcoding.pangolin.server.container.ChannelManagerContainer;
-import com.mcoding.pangolin.server.container.BaseChannelServerContainer;
+import com.mcoding.pangolin.server.container.IntranetServerBootstrapContainer;
+import com.mcoding.pangolin.server.container.MonitorServerBootstrapContainer;
+import com.mcoding.pangolin.server.container.PublicNetServerBootstrapContainer;
 import com.mcoding.pangolin.server.context.TrafficEventBus;
 import com.mcoding.pangolin.server.traffic.TrafficListener;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,8 +26,11 @@ public class ServerBootMain {
             defaultServerPort = Integer.valueOf(args[0]);
         }
 
-        PangolinEngine.start(new ChannelManagerContainer(), new BaseChannelServerContainer(defaultServerPort));
-
+        List<LifeCycle> containerList = Lists.newLinkedList();
+        containerList.add(new MonitorServerBootstrapContainer());
+        containerList.add(new PublicNetServerBootstrapContainer());
+        containerList.add(new IntranetServerBootstrapContainer(defaultServerPort));
+        PangolinEngine.start(containerList);
 
         // 流量监控总线
         AsyncEventBus eventBus = TrafficEventBus.getInstance();

@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -17,11 +18,14 @@ import java.util.concurrent.TimeUnit;
  * @author wzt on 2019/10/16.
  * @version 1.0
  */
+@ChannelHandler.Sharable
 @Slf4j
 public class HeartBeatHandler extends IdleStateHandler {
 
-    public HeartBeatHandler(int readerIdleTime, int writerIdleTime, int allIdleTime, TimeUnit timeUnit) {
-        super(readerIdleTime, writerIdleTime, allIdleTime, timeUnit);
+    public static HeartBeatHandler INSTANCE = new HeartBeatHandler();
+
+    public HeartBeatHandler() {
+        super(0, 15, 0, TimeUnit.MINUTES);
     }
 
     @Override
@@ -36,9 +40,9 @@ public class HeartBeatHandler extends IdleStateHandler {
                     .build();
 
             ctx.channel().writeAndFlush(heartBeatMsg);
-            log.info("EVENT=发送心跳包|CHANNEL={}|MSG={}",ctx.channel(), heartBeatMsg.getData().toStringUtf8());
+            log.info("EVENT=SEND HEARTBEAT PACKET|CHANNEL={}|MSG={}", ctx.channel(), heartBeatMsg.getData().toStringUtf8());
         } else if (IdleStateEvent.READER_IDLE_STATE_EVENT == evt) {
-            log.warn("EVENT=读超时，关闭管道{}", ctx.channel());
+            log.warn("EVENT=CHANNEL READ TIMEOUT CLOSE CHANNEL {}", ctx.channel());
             ctx.channel().close();
         }
     }

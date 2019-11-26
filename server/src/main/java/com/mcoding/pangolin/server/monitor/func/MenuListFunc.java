@@ -1,10 +1,8 @@
-package com.mcoding.pangolin.server.manager.func;
+package com.mcoding.pangolin.server.monitor.func;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
-import io.netty.channel.Channel;
 
 import java.util.List;
 import java.util.function.Function;

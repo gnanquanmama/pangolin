@@ -1,7 +1,7 @@
-package com.mcoding.pangolin.server.manager.func;
+package com.mcoding.pangolin.server.monitor.func;
 
 import com.alibaba.fastjson.JSON;
-import com.mcoding.pangolin.server.context.RequestChainTraceTable;
+import com.mcoding.pangolin.server.context.NetworkChainTraceTable;
 
 import java.util.function.Function;
 
@@ -13,6 +13,6 @@ public class GetRequestChainTraceInfoFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        return JSON.toJSONString(RequestChainTraceTable.getTable());
+        return JSON.toJSONString(NetworkChainTraceTable.getTable());
     }
 }

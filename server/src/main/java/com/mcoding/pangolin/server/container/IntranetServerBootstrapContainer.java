@@ -2,7 +2,6 @@ package com.mcoding.pangolin.server.container;
 
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import com.mcoding.pangolin.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -17,8 +16,6 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,69 +25,26 @@ import lombok.extern.slf4j.Slf4j;
  * @version 1.0
  */
 @Slf4j
-public class BaseChannelServerContainer implements LifeCycle {
-
-    private EventLoopGroup pubNetBossGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup pubNetWorkerGroup = new NioEventLoopGroup();
+public class IntranetServerBootstrapContainer implements LifeCycle {
 
     private EventLoopGroup intNetBossGroup = new NioEventLoopGroup(1);
     private EventLoopGroup intNetWorkerGroup = new NioEventLoopGroup();
 
     private int serverPort;
 
-    public BaseChannelServerContainer(int serverPort) {
+    public IntranetServerBootstrapContainer(int serverPort) {
         this.serverPort = serverPort;
     }
 
     @Override
     public void start() {
         this.startIntranetProxyServer();
-        this.startPublicNetworkChannelServer();
     }
 
     @Override
     public void close() {
-        pubNetBossGroup.shutdownGracefully();
-        pubNetWorkerGroup.shutdownGracefully();
-
         intNetBossGroup.shutdownGracefully();
         intNetWorkerGroup.shutdownGracefully();
-    }
-
-    /**
-     * 开启用户公网通道服务
-     */
-    private void startPublicNetworkChannelServer() {
-        ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.group(pubNetBossGroup, pubNetWorkerGroup)
-                .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_REUSEADDR, true)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.SO_BACKLOG, 100)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new ServerIdleStateHandler());
-                        pipeline.addLast(PublicNetWorkChannelHandler.INSTANCE);
-                    }
-                });
-
-        PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
-            serverBootstrap.bind(proxyPort).addListener(listener -> {
-                if (listener.isSuccess()) {
-                    log.info("EVENT=开启公网访问端口[{}]", proxyPort);
-                } else {
-                    log.error("EVENT=开启公网访问端口[{}]|异常{}",
-                            serverBootstrap, listener.cause().getMessage());
-                }
-            });
-        });
-
     }
 
     /**
@@ -103,6 +57,7 @@ public class BaseChannelServerContainer implements LifeCycle {
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 100)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -128,9 +83,9 @@ public class BaseChannelServerContainer implements LifeCycle {
 
         serverBootstrap.bind(serverPort).addListener(listener -> {
             if (listener.isSuccess()) {
-                log.info("EVENT=开启内网代理管道服务端口[{}]", serverPort);
+                log.info("EVENT=OPEN INTRANET PROXY SERVER PORT [{}]", serverPort);
             } else {
-                log.error("EVENT=开启内网代理管道服务端口[{}]|异常{}",
+                log.error("EVENT=OPEN INTRANET PROXY SERVER PORT [{}]|exception {}",
                         serverBootstrap, listener.cause().getMessage());
             }
         });
