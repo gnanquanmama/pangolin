@@ -60,27 +60,19 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        log.info("EVENT=激活内网代理端通道{}", ctx.channel());
+        log.info("EVENT=ACTIVE INTRANET PROXY CHANNEL{}", ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
         ChannelHolderContext.unBindIntranetProxyChannel(privateKey);
-        log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());
+        log.warn("EVENT=CLOSE INTRANET PROXY CHANNEL{}", ctx.channel());
         ctx.close();
-    }
-
-
-    @Override
-    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        log.info("event=代理管道可写状态变化" + ctx.channel().isWritable());
-
-        super.channelWritabilityChanged(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("EVENT=代理通道异常|CHANNEL={}|ERROR_MSG={}", ctx.channel(), cause.getMessage());
+        log.error("EVENT=PROXY CHANNEL EXCEPTION|CHANNEL={}|ERROR_MSG={}", ctx.channel(), cause.getMessage());
     }
 }

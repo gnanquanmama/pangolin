@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.common.entity;
+package com.mcoding.pangolin.common.model;
 
 import lombok.Data;
 

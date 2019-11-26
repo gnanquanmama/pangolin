@@ -20,7 +20,7 @@ public class IntranetHeartBeatResponseHandler extends SimpleChannelInboundHandle
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HeartBeatPacket packet) {
-        log.info("EVENT=收到心跳包|MSG={}", new String(packet.getData()));
+        log.info("EVENT=RECEIVE HEARTBEAT PACKET|MSG={}", new String(packet.getData()));
     }
 
 }

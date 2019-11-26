@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.mcoding.pangolin.common.codec.ChainTracePacket;
-import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.model.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import com.mcoding.pangolin.server.context.NetworkChainTraceTable;

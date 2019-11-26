@@ -1,7 +1,7 @@
 package com.mcoding.pangolin.server.context;
 
 import com.google.common.collect.Maps;
-import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.model.AddressInfo;
 
 import java.util.List;
 import java.util.Map;

@@ -47,7 +47,6 @@ public class IntranetLoginResponseHandler extends SimpleChannelInboundHandler<Lo
         ctx.channel().attr(Constants.PRIVATE_KEY).set(privateKey);
 
         ChannelHolderContext.markAsLogin(ctx.channel());
-        log.info("EVENT=登录处理|DESC=校验通过|PRIVATE_KEY={}", privateKey);
 
         ctx.channel().pipeline().remove(this);
     }

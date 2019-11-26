@@ -21,7 +21,7 @@ public class IntranetDisConnectResponseHandler extends SimpleChannelInboundHandl
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DisconnectPacket packet) {
-        log.warn("EVENT=断开外网连接通道|DESC=被代理服务器通道已关闭|SESSION_ID={}", packet.getSessionId());
+        log.warn("EVENT=DISCONNECT PUBLIC NETWORK CONNECTING CHANNEL|DESC=PROXY SERVER CHANNEL CLOSED|SESSION_ID={}", packet.getSessionId());
         ChannelHolderContext.unBindPublicNetworkChannel(packet.getSessionId());
     }
 

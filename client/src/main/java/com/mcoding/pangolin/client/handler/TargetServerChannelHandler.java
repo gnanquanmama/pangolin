@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.mcoding.pangolin.client.context.ChannelHolderContext;
 import com.mcoding.pangolin.common.constant.Constants;
-import com.mcoding.pangolin.common.entity.AddressInfo;
+import com.mcoding.pangolin.common.model.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;

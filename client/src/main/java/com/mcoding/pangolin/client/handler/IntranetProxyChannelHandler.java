@@ -50,9 +50,9 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.warn("EVENT=内网代理通道掉线，关闭所有通道{}", ChannelHolderContext.getAllChannelList());
-
+        log.warn("EVENT=intranet proxy channel offline, close all channel{}", ChannelHolderContext.getAllChannelList());
         ChannelHolderContext.unBindAll();
+
         this.clientBootstrapContainer.channelInActive(ctx);
     }
 
@@ -65,7 +65,7 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
     private void handleDisconnect(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
         String sessionId = message.getSessionId();
         ChannelHolderContext.unBindTargetServerChannel(sessionId);
-        log.info("EVENT=公网访问连接断开，关闭被代理服务器通道");
+        log.info("EVENT=public network disconnect, close proxy channel");
     }
 
     private void handleTransfer(ChannelHandlerContext ctx, PMessageOuterClass.PMessage message) {
@@ -78,7 +78,6 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
         String sessionId = message.getSessionId();
         Channel targetChannel = ChannelHolderContext.getTargetChannel(sessionId);
         if (Objects.nonNull(targetChannel)) {
-            log.info("EVENT=连接被代理服务|DESC=通道已连接，不需要重新连接");
             return;
         }
 
@@ -92,15 +91,14 @@ public class IntranetProxyChannelHandler extends SimpleChannelInboundHandler<PMe
                         @Override
                         public void operationComplete(ChannelFuture future) {
                             if (!future.isSuccess()) {
-                                log.error("EVENT=连接被代理服务器失败|DESC={}", future.cause().getMessage());
+                                log.error("EVENT=connecting real server fail|DESC={}", future.cause().getMessage());
                                 PMessageOuterClass.PMessage disConnectMsg = PMessageOuterClass.PMessage.newBuilder()
                                         .setSessionId(sessionId).setType(MessageType.DISCONNECT).build();
                                 ctx.channel().writeAndFlush(disConnectMsg);
-
                                 return;
                             }
 
-                            log.info("EVENT=连接被代理服务器成功|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
+                            log.info("EVENT=connecting real server success|HOST={}|PORT={}|CHANNEL={}", realServerHost, realServerPort, future.channel());
                             future.channel().attr(Constants.SESSION_ID).set(sessionId);
                             ChannelHolderContext.bindTargetServerChannel(sessionId, future.channel());
 
