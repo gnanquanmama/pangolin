@@ -1,10 +1,10 @@
-package com.mcoding.pangolin.server.manager.func;
+package com.mcoding.pangolin.server.monitor.func;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
 
 import java.util.List;
 import java.util.Map;
@@ -20,12 +20,12 @@ public class GetOnlineChannelInfoFunc implements Function<Void, String> {
     @Override
     public String apply(Void aVoid) {
 
-        List<AddressInfo> allPublicNetworkAddressInfoList = PangolinChannelContext.getAllPublicNetworkChannel()
+        List<AddressInfo> allPublicNetworkAddressInfoList = ChannelHolderContext.getAllPublicNetworkChannel()
                 .stream()
                 .map(ChannelAddressUtils::buildAddressInfo)
                 .collect(Collectors.toList());
 
-        List<AddressInfo> allIntranetProxyServerChannel = PangolinChannelContext.getAllIntranetProxyChannel()
+        List<AddressInfo> allIntranetProxyServerChannel = ChannelHolderContext.getAllIntranetProxyChannel()
                 .stream()
                 .map(ChannelAddressUtils::buildAddressInfo)
                 .collect(Collectors.toList());

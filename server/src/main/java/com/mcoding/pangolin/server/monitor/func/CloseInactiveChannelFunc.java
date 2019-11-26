@@ -1,6 +1,6 @@
-package com.mcoding.pangolin.server.manager.func;
+package com.mcoding.pangolin.server.monitor.func;
 
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import io.netty.channel.Channel;
 
 import java.util.function.Function;
@@ -13,11 +13,11 @@ public class CloseInactiveChannelFunc implements Function<Void, String> {
 
     @Override
     public String apply(Void aVoid) {
-        PangolinChannelContext.getAllPublicNetworkChannel().stream()
+        ChannelHolderContext.getAllPublicNetworkChannel().stream()
                 .filter(channel -> !channel.isActive())
                 .forEach(Channel::close);
 
-        PangolinChannelContext.getAllIntranetProxyChannel().stream()
+        ChannelHolderContext.getAllIntranetProxyChannel().stream()
                 .filter(channel -> !channel.isActive())
                 .forEach(Channel::close);
 

@@ -3,7 +3,7 @@ package com.mcoding.pangolin.server.handler;
 import com.mcoding.pangolin.common.codec.LoginPacket;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import com.mcoding.pangolin.server.context.PublicNetworkPortTable;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,7 +46,7 @@ public class IntranetLoginResponseHandler extends SimpleChannelInboundHandler<Lo
 
         ctx.channel().attr(Constants.PRIVATE_KEY).set(privateKey);
 
-        PangolinChannelContext.markAsLogin(ctx.channel());
+        ChannelHolderContext.markAsLogin(ctx.channel());
         log.info("EVENT=登录处理|DESC=校验通过|PRIVATE_KEY={}", privateKey);
 
         ctx.channel().pipeline().remove(this);

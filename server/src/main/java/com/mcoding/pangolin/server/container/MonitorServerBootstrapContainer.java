@@ -3,9 +3,12 @@ package com.mcoding.pangolin.server.container;
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.common.util.PropertyUtils;
 import com.mcoding.pangolin.server.handler.ChannelManagerHandler;
-import com.mcoding.pangolin.server.manager.LoginRequestHandler;
+import com.mcoding.pangolin.server.monitor.handler.TelnetLoginHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -22,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * @version 1.0
  */
 @Slf4j
-public class ChannelManagerContainer implements LifeCycle {
+public class MonitorServerBootstrapContainer implements LifeCycle {
 
     private static int telnetPort = PropertyUtils.getInt("telnet_port");
 
@@ -45,13 +48,13 @@ public class ChannelManagerContainer implements LifeCycle {
                         pipeline.addLast(new DelimiterBasedFrameDecoder(1024, Delimiters.lineDelimiter()));
                         pipeline.addLast(new StringDecoder());
                         pipeline.addLast(new StringEncoder());
-                        pipeline.addLast(new LoginRequestHandler());
+                        pipeline.addLast(new TelnetLoginHandler());
                         pipeline.addLast(new ChannelManagerHandler());
                     }
                 });
 
         bootstrap.bind(telnetPort)
-                .addListener(listener -> log.info("EVENT=开启TELNET服务|端口={}", telnetPort));
+                .addListener(listener -> log.info("EVENT=OPEN TELNET SERVICE|PORT={}", telnetPort));
     }
 
 

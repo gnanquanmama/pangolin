@@ -5,7 +5,7 @@ import com.mcoding.pangolin.common.codec.*;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -66,7 +66,7 @@ public class IntranetPacketDecodeHandler extends MessageToMessageDecoder<PMessag
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
-        PangolinChannelContext.unBindIntranetProxyChannel(privateKey);
+        ChannelHolderContext.unBindIntranetProxyChannel(privateKey);
         log.warn("EVENT=关闭内网代理端通道{}", ctx.channel());
         ctx.close();
     }

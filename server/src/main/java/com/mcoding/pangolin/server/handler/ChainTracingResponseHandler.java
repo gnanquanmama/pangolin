@@ -3,11 +3,11 @@ package com.mcoding.pangolin.server.handler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
+import com.mcoding.pangolin.common.codec.ChainTracePacket;
 import com.mcoding.pangolin.common.entity.AddressInfo;
 import com.mcoding.pangolin.common.util.ChannelAddressUtils;
-import com.mcoding.pangolin.common.codec.ChainTracePacket;
-import com.mcoding.pangolin.server.context.PangolinChannelContext;
-import com.mcoding.pangolin.server.context.RequestChainTraceTable;
+import com.mcoding.pangolin.server.context.ChannelHolderContext;
+import com.mcoding.pangolin.server.context.NetworkChainTraceTable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,12 +27,12 @@ import java.util.List;
 @ChannelHandler.Sharable
 public class ChainTracingResponseHandler extends SimpleChannelInboundHandler<ChainTracePacket> {
 
-    public static final ChainTracingResponseHandler INSTANCE =new ChainTracingResponseHandler();
+    public static final ChainTracingResponseHandler INSTANCE = new ChainTracingResponseHandler();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ChainTracePacket packet) {
         String data = new String(packet.getData());
-        log.info("EVENT=收取到追踪信息|MSG={}", data);
+        log.info("EVENT=RECEIVE TRACING MESSAGE|MSG={}", data);
 
         List<AddressInfo> clientAddressList = JSON.parseObject(data, new TypeReference<List<AddressInfo>>() {
         });
@@ -51,8 +51,8 @@ public class ChainTracingResponseHandler extends SimpleChannelInboundHandler<Cha
         String privateKey = clientProxyAddress.getPrivateKey();
         String sessionId = clientTargetAddress.getSessionId();
 
-        Channel intranetProxyChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
-        Channel publicNetworkChannel = PangolinChannelContext.getPublicNetworkChannel(sessionId);
+        Channel intranetProxyChannel = ChannelHolderContext.getIntranetProxyServerChannel(privateKey);
+        Channel publicNetworkChannel = ChannelHolderContext.getPublicNetworkChannel(sessionId);
 
         AddressInfo serverIntranetProxyChannel = ChannelAddressUtils.buildAddressInfo(intranetProxyChannel);
         AddressInfo serverPublicNetworkChannel = ChannelAddressUtils.buildAddressInfo(publicNetworkChannel);
@@ -63,7 +63,7 @@ public class ChainTracingResponseHandler extends SimpleChannelInboundHandler<Cha
         requestAddressList.add(clientProxyAddress);
         requestAddressList.add(clientTargetAddress);
 
-        RequestChainTraceTable.add(sessionId, requestAddressList);
+        NetworkChainTraceTable.add(sessionId, requestAddressList);
     }
 
 }

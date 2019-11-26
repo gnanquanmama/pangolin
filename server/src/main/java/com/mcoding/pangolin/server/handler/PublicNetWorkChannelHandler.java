@@ -38,7 +38,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         int port = localSocketAddress.getPort();
 
         String privateKey = PublicNetworkPortTable.getUserToPortMap().inverse().get(port);
-        Channel intranetProxyChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
+        Channel intranetProxyChannel = ChannelHolderContext.getIntranetProxyServerChannel(privateKey);
         if (intranetProxyChannel == null) {
             log.warn("代理客户端通道还未建立");
             ctx.channel().close();
@@ -48,7 +48,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         if (!intranetProxyChannel.isActive()) {
             System.out.println();
             log.warn("EVENT=关闭未激活代理客户端通道{}", ctx.channel());
-            PangolinChannelContext.unBindIntranetProxyChannel(privateKey);
+            ChannelHolderContext.unBindIntranetProxyChannel(privateKey);
             ctx.channel().close();
             return;
         }
@@ -70,7 +70,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
 
         intranetProxyChannel.writeAndFlush(connectPacket);
 
-        PangolinChannelContext.bindPublicNetworkChannel(sessionId, publicNetworkChannel);
+        ChannelHolderContext.bindPublicNetworkChannel(sessionId, publicNetworkChannel);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
-        Channel proxyServerChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
+        Channel proxyServerChannel = ChannelHolderContext.getIntranetProxyServerChannel(privateKey);
         if (Objects.isNull(proxyServerChannel) || !proxyServerChannel.isActive()) {
             log.warn("EVENT=关闭代理服务代理管道{}", ctx.channel());
             ctx.close();
@@ -110,11 +110,11 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         String sessionId = ctx.channel().attr(Constants.SESSION_ID).get();
         String privateKey = ctx.channel().attr(Constants.PRIVATE_KEY).get();
 
-        PangolinChannelContext.unBindPublicNetworkChannel(sessionId);
+        ChannelHolderContext.unBindPublicNetworkChannel(sessionId);
         ctx.close();
         log.warn("EVENT=关闭公网代理端通道{}", ctx.channel());
 
-        Channel proxyChannel = PangolinChannelContext.getIntranetProxyServerChannel(privateKey);
+        Channel proxyChannel = ChannelHolderContext.getIntranetProxyServerChannel(privateKey);
 
 
         if (Objects.nonNull(proxyChannel) && proxyChannel.isActive()) {
@@ -126,7 +126,7 @@ public class PublicNetWorkChannelHandler extends SimpleChannelInboundHandler<Byt
         }
 
         // 清楚请求链路信息
-        RequestChainTraceTable.remove(sessionId);
+        NetworkChainTraceTable.remove(sessionId);
     }
 
     @Override

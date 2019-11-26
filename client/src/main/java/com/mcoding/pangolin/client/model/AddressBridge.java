@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.client.entity;
+package com.mcoding.pangolin.client.model;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import lombok.Data;
  * @version 1.0
  */
 @Data
-public class AddressBridgeInfo {
+public class AddressBridge {
 
     private String privateKey;
 

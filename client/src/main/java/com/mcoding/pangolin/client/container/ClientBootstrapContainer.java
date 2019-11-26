@@ -1,11 +1,11 @@
 package com.mcoding.pangolin.client.container;
 
-import com.mcoding.pangolin.client.entity.AddressBridgeInfo;
 import com.mcoding.pangolin.client.handler.HeartBeatHandler;
 import com.mcoding.pangolin.client.handler.IntranetProxyChannelHandler;
 import com.mcoding.pangolin.client.handler.LoginRequestHandler;
 import com.mcoding.pangolin.client.handler.TargetServerChannelHandler;
 import com.mcoding.pangolin.client.listener.ChannelStatusListener;
+import com.mcoding.pangolin.client.model.AddressBridge;
 import com.mcoding.pangolin.client.util.ThreadUtils;
 import com.mcoding.pangolin.common.LifeCycle;
 import com.mcoding.pangolin.protocol.PMessageOuterClass;
@@ -28,14 +28,14 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  */
 @Slf4j
-public class ClientContainer implements ChannelStatusListener, LifeCycle {
+public class ClientBootstrapContainer implements ChannelStatusListener, LifeCycle {
 
-    private AddressBridgeInfo addressBridgeInfo;
+    private AddressBridge addressBridge;
     private Bootstrap intranetProxyClientBootstrap;
     private Bootstrap targetServerClientBootstrap;
 
-    public ClientContainer(AddressBridgeInfo addressBridgeInfo) {
-        this.addressBridgeInfo = addressBridgeInfo;
+    public ClientBootstrapContainer(AddressBridge addressBridge) {
+        this.addressBridge = addressBridge;
         this.init();
     }
 
@@ -72,14 +72,14 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
             @Override
             public void initChannel(SocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(new HeartBeatHandler(0, 15, 0, TimeUnit.MINUTES));
+                pipeline.addLast(HeartBeatHandler.INSTANCE);
                 pipeline.addLast(new ProtobufVarint32FrameDecoder());
                 pipeline.addLast(new ProtobufDecoder(PMessageOuterClass.PMessage.getDefaultInstance()));
                 pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
                 pipeline.addLast(new ProtobufEncoder());
 
-                pipeline.addLast(new LoginRequestHandler(addressBridgeInfo.getPrivateKey()));
-                pipeline.addLast(new IntranetProxyChannelHandler(addressBridgeInfo, targetServerClientBootstrap, ClientContainer.this));
+                pipeline.addLast(new LoginRequestHandler(addressBridge.getPrivateKey()));
+                pipeline.addLast(new IntranetProxyChannelHandler(addressBridge, targetServerClientBootstrap, ClientBootstrapContainer.this));
             }
         });
 
@@ -89,15 +89,15 @@ public class ClientContainer implements ChannelStatusListener, LifeCycle {
      * 连接内网代理服务器
      */
     private void connectIntranetProxyServer() {
-        String intranetProxyServerHost = addressBridgeInfo.getIntranetProxyServerHost();
-        int intranetProxyPort = addressBridgeInfo.getIntranetProxyServerPort();
+        String intranetProxyServerHost = addressBridge.getIntranetProxyServerHost();
+        int intranetProxyPort = addressBridge.getIntranetProxyServerPort();
 
         try {
             intranetProxyClientBootstrap
                     .connect(intranetProxyServerHost, intranetProxyPort)
                     .addListener((ChannelFuture future) -> {
                         if (future.isSuccess()) {
-                            log.info("EVENT=连接内网代理服务器|HOST={}|PORT={}|CHANNEL={}", intranetProxyServerHost, intranetProxyPort, future.channel());
+                            log.info("EVENT=CONNECT INTRANET PROXY SERVER|HOST={}|PORT={}|CHANNEL={}", intranetProxyServerHost, intranetProxyPort, future.channel());
                         } else {
                             log.error(future.cause().getMessage());
                             ThreadUtils.sleep(10, TimeUnit.SECONDS);

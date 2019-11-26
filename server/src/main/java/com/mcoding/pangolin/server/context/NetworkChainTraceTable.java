@@ -12,7 +12,7 @@ import java.util.Map;
  * @author wzt on 2019/10/17.
  * @version 1.0
  */
-public class RequestChainTraceTable {
+public class NetworkChainTraceTable {
 
     private static Map<String, List<AddressInfo>> map = Maps.newConcurrentMap();
 
