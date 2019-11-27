@@ -7,7 +7,7 @@
     <groupId>com.mcoding</groupId>
     <artifactId>pangolin</artifactId>
     <packaging>pom</packaging>
-    <version>${project.version}</version>
+    <version>1.0-SNAPSHOT</version>
     <modules>
         <module>common</module>
         <module>protocol</module>
