@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.traffic;
+package com.mcoding.pangolin.server.monitor.traffic;
 
 import lombok.Data;
 

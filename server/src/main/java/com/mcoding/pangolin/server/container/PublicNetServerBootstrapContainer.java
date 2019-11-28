@@ -13,8 +13,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,11 +24,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PublicNetServerBootstrapContainer implements LifeCycle {
 
+    public final static PublicNetServerBootstrapContainer INSTANCE = new PublicNetServerBootstrapContainer();
+
+    private PublicNetServerBootstrapContainer() {
+    }
+
     private EventLoopGroup pubNetBossGroup = new NioEventLoopGroup(1);
     private EventLoopGroup pubNetWorkerGroup = new NioEventLoopGroup();
+    private ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     @Override
     public void start() {
+        this.initServerBootstrap();
         this.startPublicNetworkChannelServer();
     }
 
@@ -40,11 +45,7 @@ public class PublicNetServerBootstrapContainer implements LifeCycle {
         pubNetWorkerGroup.shutdownGracefully();
     }
 
-    /**
-     * 开启用户公网通道服务
-     */
-    private void startPublicNetworkChannelServer() {
-        ServerBootstrap serverBootstrap = new ServerBootstrap();
+    private void initServerBootstrap() {
         serverBootstrap.group(pubNetBossGroup, pubNetWorkerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_REUSEADDR, true)
@@ -53,7 +54,6 @@ public class PublicNetServerBootstrapContainer implements LifeCycle {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) {
@@ -62,18 +62,40 @@ public class PublicNetServerBootstrapContainer implements LifeCycle {
                         pipeline.addLast(PublicNetWorkChannelHandler.INSTANCE);
                     }
                 });
+    }
 
+    /**
+     * 开启用户公网服务
+     */
+    private void startPublicNetworkChannelServer() {
         PublicNetworkPortTable.getUserToPortMap().forEach((userId, proxyPort) -> {
             serverBootstrap.bind(proxyPort).addListener(listener -> {
                 if (listener.isSuccess()) {
                     log.info("EVENT=OPEN PUBLIC NETWORK PORT [{}]", proxyPort);
                 } else {
                     log.error("EVENT=OPEN PUBLIC NETWORK PORT [{}]|exception {}",
-                            serverBootstrap, listener.cause().getMessage());
+                            proxyPort, listener.cause().getMessage());
                 }
             });
         });
     }
 
+    /**
+     * 临时绑定端口
+     *
+     * @param proxyPort
+     * @param key
+     */
+    public synchronized void bindTempProxyPort(int proxyPort, String key) {
+        serverBootstrap.bind(proxyPort).addListener(listener -> {
+            if (listener.isSuccess()) {
+                log.info("EVENT=OPEN PUBLIC NETWORK PORT [{}]", proxyPort);
+                PublicNetworkPortTable.getUserToPortMap().put(key, proxyPort);
+            } else {
+                log.error("EVENT=OPEN PUBLIC NETWORK PORT [{}]|exception {}",
+                        proxyPort, listener.cause().getMessage());
+            }
+        });
+    }
 
 }

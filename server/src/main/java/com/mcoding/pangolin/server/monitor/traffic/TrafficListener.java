@@ -1,4 +1,4 @@
-package com.mcoding.pangolin.server.traffic;
+package com.mcoding.pangolin.server.monitor.traffic;
 
 import com.google.common.eventbus.Subscribe;
 import com.mcoding.pangolin.server.context.TrafficTable;
