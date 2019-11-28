@@ -4,7 +4,7 @@ import com.mcoding.pangolin.common.codec.TransferPacket;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.server.context.ChannelHolderContext;
 import com.mcoding.pangolin.server.context.TrafficEventBus;
-import com.mcoding.pangolin.server.traffic.TrafficEvent;
+import com.mcoding.pangolin.server.monitor.traffic.TrafficEvent;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;

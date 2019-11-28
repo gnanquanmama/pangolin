@@ -1,6 +1,7 @@
 # Pangolin
 轻量级内网穿透工具，类似花生壳工具  
-基于Java8，netty4.x实现，开箱即用，可转发基于TCP的应用层数据流，例如HTTP/HTTPS,SSH。
+基于Java8，netty4.x实现，开箱即用，可转发基于TCP的应用层数据流，例如HTTP/HTTPS,SSH  
+通讯协议使用Protocol Buffer
 
 #### Architecture Diagram
 ![image](https://raw.githubusercontent.com/gnanquanmama/pangolin/develop/server/src/main/resources/static/architecture.png)
@@ -42,3 +43,9 @@
     >>> x.退出请输入exit
     >>> 请输入对应的数字...
     
+    
+#### BindTempProxyPort  
+
+    curl http://127.0.0.1:7601/dashboard/bindTempProxyPort -d "privateKey=123456&proxyPort=7702&authCode=XXXX"
+    YYYY为年，MM为月，DD为日
+    authCode规则为 YYYY + MM**2 + DD**3 

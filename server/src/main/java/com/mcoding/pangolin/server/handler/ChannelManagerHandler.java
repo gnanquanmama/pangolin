@@ -27,8 +27,8 @@ public class ChannelManagerHandler extends SimpleChannelInboundHandler<String> {
     static {
         commandToFunc.put("0", new MenuListFunc());
         commandToFunc.put("1", new GetOnlineChannelInfoFunc());
-        commandToFunc.put("2", new CloseInactiveChannelFunc());
-        commandToFunc.put("3", new GetPublicNetworkPortConfigFunc());
+        commandToFunc.put("2", new GetPublicNetworkPortConfigFunc());
+        commandToFunc.put("3", new CloseInactiveChannelFunc());
         commandToFunc.put("4", new GetRequestChainTraceInfoFunc());
         commandToFunc.put("5", new GetUserFlowInfoFunc());
     }

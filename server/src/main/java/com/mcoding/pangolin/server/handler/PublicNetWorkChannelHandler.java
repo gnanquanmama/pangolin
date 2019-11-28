@@ -6,7 +6,7 @@ import com.mcoding.pangolin.common.codec.TransferPacket;
 import com.mcoding.pangolin.common.constant.Constants;
 import com.mcoding.pangolin.protocol.MessageType;
 import com.mcoding.pangolin.server.context.*;
-import com.mcoding.pangolin.server.traffic.TrafficEvent;
+import com.mcoding.pangolin.server.monitor.traffic.TrafficEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;

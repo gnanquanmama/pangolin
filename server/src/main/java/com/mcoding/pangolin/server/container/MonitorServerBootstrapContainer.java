@@ -27,6 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MonitorServerBootstrapContainer implements LifeCycle {
 
+    public static final MonitorServerBootstrapContainer INSTANCE = new MonitorServerBootstrapContainer();
+
+    private MonitorServerBootstrapContainer() {
+    }
+
     private static int telnetPort = PropertyUtils.getInt("telnet_port");
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
