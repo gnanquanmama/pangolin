@@ -7,13 +7,21 @@
 ![image](https://raw.githubusercontent.com/gnanquanmama/pangolin/develop/server/src/main/resources/static/architecture.png)
 
 
-#### How To Use
-
+#### How To Use - Local Compile
     0. git clone git@github.com:gnanquanmama/pangolin.git
-    1. [可选] 配置server模块下的pub_net_conf.json文件对应的公网访问端口
+    1. [可选] 配置server模块下的pub_net_conf.json文件对应的公网访问端口，默认映射端口为7700
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
     4. java -jar pangolin_client.jar -i_host [xxxx] -i_port 7500 -t_host [yyyy] -t_port [zzzz] -p_key qaz123
+    
+#### How To Use - Docker
+    
+    docker pull xwzt/pangolin-server:latest
+    docker run -d -p 7500:7500 -p 7600:7600 -p 7700:7700 xwzt/pangolin-server 7500
+        
+    docker pull xwzt/pangolin-client:latest
+    docker run -d xwzt/pangolin-client -i_host [xxxx] -i_port 7500 -t_host [yyyy] -t_port [zzzz] -p_key qaz123
+    
 
 #### Argument Description  
     i_host 内网代理服务器主机名称  
