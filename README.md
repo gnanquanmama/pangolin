@@ -9,13 +9,8 @@
 
 #### How To Use
 
+    0. git clone git@github.com:gnanquanmama/pangolin.git
     1. [可选] 配置server模块下的pub_net_conf.json文件对应的公网访问端口
-        [
-            {
-                "pub_net_port": 7700,
-                "user_private_key": "qaz123"
-            }
-        ]
     2. mvn clean package  
     3. java -jar pangolin_server.jar 7500  
     4. java -jar pangolin_client.jar -i_host [xxxx] -i_port 7500 -t_host [yyyy] -t_port [zzzz] -p_key qaz123
